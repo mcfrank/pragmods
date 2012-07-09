@@ -75,6 +75,19 @@ ZerosVector = function(x) {
 }
 
 ######################################################################
+## Determine whether the matrix m contains a row of all 0s.
+
+ContainsZeroVector = function(m) {
+  vals = apply(m, 1, ZerosVector)
+  if (TRUE %in% vals) {
+    return(TRUE)
+  }
+  else {
+    return(FALSE)
+  }
+}
+
+######################################################################
 ## If the numeric vector argument row contains only 0s, map it to a
 ## uniform distribution:
 ##

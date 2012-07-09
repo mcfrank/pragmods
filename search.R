@@ -146,13 +146,16 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
     ## Turn the set/list into a vector of indices:
     ind = unlist(ind)    
     ## Where the number of indices is correct:
-    if(length(ind) == ncol) {      
-      ## Get the corresponding columns from vecs:
-      thismat = vecs[, ind]      
-      rownames(thismat) = row.names
-      colnames(thismat) = col.names
-      mats[[i]] = thismat
-      i = i + 1
+    if(length(ind) == ncol) {
+      thismat = vecs[, ind]
+      ## Option to exclude matrices that contain all 0 rows:
+      if (include.ineffable == TRUE | ContainsZeroVector(thismat) == FALSE) {       
+        ## Get the corresponding columns from vecs:           
+        rownames(thismat) = row.names
+        colnames(thismat) = col.names
+        mats[[i]] = thismat
+        i = i + 1
+      }
     }
   }
   return(mats)   
@@ -179,7 +182,7 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
 
 IbrLengths = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
   df = data.frame('Matrix'=c(), 'Nrow'=c(), 'Ncol'=c(), 'Length'=c())
-  mats = AllBinaryMatrices(nrow, ncol, include.universal=include.universal)
+  mats = AllBinaryMatrices(nrow, ncol, include.universal=include.universal, include.ineffable=include.ineffable)
   for (mat in mats) {
     seqs = IBR(mat)
     str = paste(mat, collapse='')    
@@ -203,10 +206,10 @@ IbrMaxLength = function(nrow, ncol, include.universal=FALSE, include.ineffable=F
 ## PLot the distribution of lengths for a given matrix space. The arguments
 ## are the same as those for IbrLengths. A plot window is produced.
 
-IbrLengthPLot = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
+IbrLengthPlot = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
   df = IbrLengths(nrow, ncol, include.universal=include.universal, include.ineffable=include.ineffable)
   x = xtabs(~ df$Length)
-  title = paste('(', nrow, ' x ', ncol, ') matrices; include.universal=', include.universal, sep='')
+  title = paste('(', nrow, ' x ', ncol, ') matrices; include.universal=', include.universal, '; include.ineffable=', include.ineffable, sep='')
   barplot(x, xlab='Length', ylab='Count', main=title, axes=F)
   axis(2, at=as.numeric(x), las=1)
 }

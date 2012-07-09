@@ -27,7 +27,6 @@ binary<-function(p_number) {
 ## Arguments:
 ##
 ## nrow: the number of (worlds/referents) to have
-## include.empty: whether to include columns with all 0s (default: FALSE)
 ## include.universal: whether to include columns with all 1s (default: FALSE)
 ##
 ## For example,
@@ -42,17 +41,22 @@ binary<-function(p_number) {
 ##
 ## whereas
 ##
-## AllBinaryVectors(2, include.empty=T, include.universal=T)
+## AllBinaryVectors(2, include.universal=T)
 ##
 ## returns
 ##
-##      [,1] [,2] [,3] [,4]
-## [1,]    0    0    1    1
-## [2,]    0    1    0    1
+##      [,1] [,2] [,3]
+## [1,]    0    1    1
+## [2,]    1    0    1
 
-AllBinaryVectors = function(nrow, include.empty=FALSE, include.universal=FALSE)  {  
+AllBinaryVectors = function(nrow, include.universal=FALSE)  {  
   val = 1
   ncol = (2^nrow) - 2
+  ## include.empty is now always set to FALSE, because I think
+  ## the model can't accommodate it -- it creates surprise rows 
+  ## whose semantics is also surprising and hence there is
+  ## no startegy to resort to.
+  include.empty = FALSE
   ## If starting with the all 0s column:
   if (include.empty) {
     val = 0
@@ -92,13 +96,12 @@ AllBinaryVectors = function(nrow, include.empty=FALSE, include.universal=FALSE) 
 ##
 ## nrow: the number of (worlds/referents) to have
 ## ncol: number of columns (properties/messages) to have
-## include.empty: whether to include columns with all 0s (default: FALSE)
 ## include.universal: whether to include columns with all 1s (default: FALSE)
 ## include.ineffable: whether to have any all 0s rows (default: FALSE)
 ##
 ## For example,
 ##
-## AllBinaryMatrices(2, 2, include.empty=F, include.universal=T)
+## AllBinaryMatrices(2, 2, include.universal=T)
 ##
 ## delivers
 ##
@@ -117,7 +120,7 @@ AllBinaryVectors = function(nrow, include.empty=FALSE, include.universal=FALSE) 
 ## t1  1  1
 ## t2  0  1
 
-AllBinaryMatrices = function(nrow, ncol, include.empty=FALSE, include.universal=FALSE, include.ineffable=FALSE) {
+AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
   ## Check for sensible values:
   if(ncol <= 1) {
     stop(paste("Apologies: nrow needs to be greater than 1."))
@@ -132,7 +135,7 @@ AllBinaryMatrices = function(nrow, ncol, include.empty=FALSE, include.universal=
   mats = list()
   ## The full set of possible vectors; we will draw
   ## subsets of length ncol:
-  vecs = AllBinaryVectors(nrow, include.empty=include.empty, include.universal=include.universal)
+  vecs = AllBinaryVectors(nrow, include.universal=include.universal)
   ## Column indices, which we turn into a set:
   indices = seq(1, ncol(vecs))
   indices = as.set(indices)
@@ -162,7 +165,6 @@ AllBinaryMatrices = function(nrow, ncol, include.empty=FALSE, include.universal=
 ##
 ## nrow: number of rows (worlds/referents) to have
 ## ncol: number of columns (properties/messages) to have
-## include.empty: whether to include columns with all 0s (default: FALSE)
 ## include.universal: whether to include columns with all 1s (default: FALSE)
 ## include.ineffable: whether to have any all 0s rows (default: FALSE)
 ##
@@ -175,9 +177,9 @@ AllBinaryMatrices = function(nrow, ncol, include.empty=FALSE, include.universal=
 ## the provided arguments, and Lenght is the number of steps required for
 ## convergence.
 
-IbrLengths = function(nrow, ncol, include.empty=FALSE, include.universal=FALSE, include.ineffable=FALSE) {
+IbrLengths = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
   df = data.frame('Matrix'=c(), 'Nrow'=c(), 'Ncol'=c(), 'Length'=c())
-  mats = AllBinaryMatrices(nrow, ncol, include.empty=include.empty, include.universal=include.universal)
+  mats = AllBinaryMatrices(nrow, ncol, include.universal=include.universal)
   for (mat in mats) {
     seqs = IBR(mat)
     str = paste(mat, collapse='')    
@@ -188,6 +190,25 @@ IbrLengths = function(nrow, ncol, include.empty=FALSE, include.universal=FALSE, 
   return(df)
 }
 
+######################################################################
+## Return the maximum length for a given matrix space. The arguments
+## are the same as those for IbrLengths. The value is a float.
 
+IbrMaxLength = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
+  df = IbrLengths(nrow, ncol, include.universal=include.universal, include.ineffable=include.ineffable)
+  return(max(df$Length))
+}
+
+######################################################################
+## PLot the distribution of lengths for a given matrix space. The arguments
+## are the same as those for IbrLengths. A plot window is produced.
+
+IbrLengthPLot = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
+  df = IbrLengths(nrow, ncol, include.universal=include.universal, include.ineffable=include.ineffable)
+  x = xtabs(~ df$Length)
+  title = paste('(', nrow, ' x ', ncol, ') matrices; include.universal=', include.universal, sep='')
+  barplot(x, xlab='Length', ylab='Count', main=title, axes=F)
+  axis(2, at=as.numeric(x), las=1)
+}
 
 

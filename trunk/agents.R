@@ -132,7 +132,7 @@ Lbayes = function(m, sem=m, costs=NULL, prior=UniformDistribution(nrow(m))) {
 
 Listener = function(m, sem, costs=NULL, prior=UniformDistribution(nrow(m)), argmax=TRUE) {  
   ## Transpose:
-  m = t(m)
+  m = t(m)  
   ## All 0s cost function if none was supplied:
   if (is.null(costs)) {
     costs = UniformCosts(m)
@@ -148,10 +148,10 @@ Listener = function(m, sem, costs=NULL, prior=UniformDistribution(nrow(m)), argm
     else {
       m[i, ] = m[i, ] - costs[i, ]
     }    
-  }
+  }  
   ## Impose the prior and renormalize:
   normalizer = function(row){ (row*prior) / sum(row*prior) }
-  m = t(apply(m, 1, normalizer))
+  m = t(apply(m, 1, normalizer))  
   ## Maximize:
   if (argmax) {
     m = t(apply(m, 1, VecMax))

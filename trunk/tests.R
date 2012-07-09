@@ -1,0 +1,85 @@
+#!/usr/bin/env R
+
+source('ibr.R')
+
+######################################################################
+## SCENARIOS:
+
+## A standard scalar implicature case:
+scalars = matrix(
+  c(1,   0,   0,
+    0,   1,   0,
+    0,   1,   1), byrow=T, nrow=3,
+  dimname=list(
+    c('w_no', 'w_somenotall', 'w_all'), # Row names; worlds
+    c('NO', 'SOME', 'ALL'))) # Column names; messages.
+
+## Science paper referential game:
+fg = matrix(
+  c(1,0,1,0,
+    1,0,0,1,
+    0,1,1,0), byrow=T, nrow=3,
+  dimnames=list(
+    c('r_bs','r_bc','r_gs'), # Row names; objects.
+    c('blue','green','square','circle')) # Colum names; messages.
+  )
+
+## The Horn division of labor game (makes crucial ise of the costs)
+hornnames = list(
+  c('w_footbreak', 'w_ditch'),
+  c('STOP', 'MAKE-STOP'))
+
+## Utilities:
+hornutil = matrix(
+  c(1,1,
+    1,1), byrow=T, nrow=2,
+  dimnames=hornnames)
+
+## Costs:
+horncosts = list()
+horncosts[[1]] = t(matrix(c(0,    0, 1/10, 1/10), byrow=T, nrow=2, dimnames=hornnames))
+horncosts[[2]] = matrix(c(0, 1/10,    0, 1/10), byrow=T, nrow=2, dimnames=hornnames)
+
+######################################################################
+## DEMOS:
+
+## Example from p. 9ff of the Jaeger handbook article:
+ScalarImplicature = function() {
+  print("======================================================================")
+  print('Scalars')    
+  print(IBR(scalars))
+}
+
+## Science paper referential game:
+FrankGoodman = function() {
+  print("======================================================================")
+  print('Frank-Goodman')    
+  print(IBR(fg))
+}
+
+## Example from p. 16-17 of the Jaeger handbook article:
+Division = function() {
+  print("======================================================================")
+  print('Division of pragmatic labor (costly messages)') 
+  print(IBR(hornutil, costs=horncosts))
+
+}
+
+## Evaluate from a string:
+FromString = function(s) {
+  print("======================================================================")
+  print(paste('Processing string', s) )
+  return(eval(parse(text=s)))
+}
+
+## All demos:
+Demos = function() {
+  ScalarImplicature()
+  FrankGoodman()
+  Division()
+  print(FromString('Lstar(Sstar(Lstar(S0(fg), fg)), fg)'))
+}
+
+Demos()
+  
+

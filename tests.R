@@ -80,17 +80,7 @@ Demos = function() {
   print(FromString('Lstar(Sstar(Lstar(S0(fg), fg)), fg)'))
 }
 
-##Demos()
+Demos()
   
 
 
-## A standard scalar implicature case:
-empty = matrix(
-  c(0,   0,   0,
-    0,   1,   0,
-    0,   1,   1), byrow=T, nrow=3,
-  dimname=list(
-    c('w_no', 'w_somenotall', 'w_all'), # Row names; worlds
-    c('NO', 'SOME', 'ALL'))) # Column names; messages.
-
-print(Listener(S0(empty), empty))

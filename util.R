@@ -12,7 +12,7 @@
 ## a numeric vector of the same length as row
 
 VecNormalize = function(row){
-  if(sum(row) > 0) {
+  if (sum(row) > 0) {
     return(row/sum(row))
   }
   else {

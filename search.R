@@ -45,7 +45,7 @@ AllBinaryVectors = function(nrow)  {
     fmt = paste("%0", nrow, "d", sep='')
     s = sprintf(fmt,  binary(i)  )
     vals = strsplit(s, '')[[1]]
-    vals = as.numeric(vals)
+    vals = as.numeric(vals)        
     mat[, i] = vals    
   }
   return(mat)
@@ -57,16 +57,30 @@ AllBinaryVectors = function(nrow)  {
 ## entities.
 
 AllBinaryMatrices = function(nrow, ncol) {
+  ## Intuitive row and column names:
+  row.names = paste('t', seq(1,nrow), sep='')
+  col.names = paste('m', seq(1,ncol), sep='')
+  ## Output list of matrices:
   mats = list()
+  ## The full set of possible vectors; we will draw
+  ## subsets of length ncol:
   vecs = AllBinaryVectors(nrow)
+  ## Column indices, which we turn into a set:
   indices = seq(1, ncol(vecs))
   indices = as.set(indices)
+  ## Power-set of column indices:
   indexSets = 2^indices
   i = 1
   for (ind in indexSets) {
+    ## Turn the set/list into a vector of indices:
     ind = unlist(ind)
+    ## Where the number of indices is correct:
     if(length(ind) == ncol) {
-      mats[[i]] = vecs[, ind]
+      ## Get the corresponding columns from vecs:
+      thismat = vecs[, ind]
+      rownames(thismat) = row.names
+      colnames(thismat) = col.names
+      mats[[i]] = thismat
       i = i + 1
     }
   }
@@ -74,17 +88,21 @@ AllBinaryMatrices = function(nrow, ncol) {
 }
 
 ######################################################################
-## Exhaustively search through a space of matrices to see how many
-## steps they require for convergence.
+## Exhaustively search through a space of matrices of specified dimension.
 
 IbrLengths = function(nrow, ncol) {
-  lengths = c()
+  df = data.frame('Matrix'=c(), 'Nrow'=c(), 'Ncol'=c(), 'Length'=c())
   mats = AllBinaryMatrices(nrow, ncol)
   for (mat in mats) {
     seqs = IBR(mat)
-    lengths = c(lengths, length(seqs))    
+    str = paste(mat, collapse='')    
+    len = length(seqs)
+    thisdf = data.frame('Matrix'=str, 'Nrow'=nrow, 'Ncol'=ncol, 'Length'=len)
+    df = rbind(df, thisdf)
   }
-  return(lengths)
+  return(df)
 }
+
+
 
 

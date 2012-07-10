@@ -17,7 +17,6 @@ source('util.R')
 ## a matrix with the same dimensions as m in which
 ## rows have been turned into probability distributions
 
-## Initial function for normalizing a probability matrix:
 S0 = function(m) {
   ## Note: apply with 1 as the second argument remaps the
   ## row values, but it also tranposes the matrix. Here,
@@ -186,7 +185,7 @@ SurprisalSpeaker = function(m) {
     ## Speaker choices:
     produce = sum(row * interpret)
     val = (interpret/produce)
-    ## Multipl by the binary vector to ensure truth-functionality:
+    ## Multiply by the binary vector to ensure truth-functionality:
     val = val * row
     return(val)
   }

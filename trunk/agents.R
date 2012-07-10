@@ -161,4 +161,36 @@ Listener = function(m, sem, costs=NULL, prior=UniformDistribution(nrow(m)), argm
   return(m)
 }
 
+######################################################################
+## This is a Frank-Goodman speaker, using surprisals:
+##
+## Argument:
+## m: a truth-conditional (i.e., binary) matrix, referents/worlds as rows and messages as columns
+##
+## Value:
+##
+## the new speaker matrix with the same dimensions as m where
+##
+##   M[r_i, m_j] = P(w_i|r_j) = (1/|w_i|) / sum_{w' in W} 1/|w'|)
+##
+## where |w| is the semantic interpretation of w
+## and W is the set of all words true of r_i.
+
+SurprisalSpeaker = function(m) {
+  ## Inverse column sums give the word interpretations:
+  interpret = 1 / apply(m, 2, sum)
+  ## Speaker choices:
+  produce = apply(m, 1, function(row){ sum(row * interpret)})
+  ## Function to apply to each row:
+  func = function(row) {
+    ## Speaker choices:
+    produce = sum(row * interpret)
+    val = (interpret/produce)
+    ## Multipl by the binary vector to ensure truth-functionality:
+    val = val * row
+    return(val)
+  }
+  m = t(apply(m, 1, func))
+  return(m)    
+}
 

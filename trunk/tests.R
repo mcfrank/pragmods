@@ -1,6 +1,7 @@
 #!/usr/bin/env R
 
 source('ibr.R')
+source('viz.R')
 
 ######################################################################
 ## SCENARIOS:
@@ -13,6 +14,15 @@ scalars = matrix(
   dimname=list(
     c('w_no', 'w_somenotall', 'w_all'), # Row names; worlds
     c('NO', 'SOME', 'ALL'))) # Column names; messages.
+
+## Stiller no-scales, but with the ballcap left null:
+stiller.noscales = matrix(
+  c(0,   0,   1,
+    0,   1,   0,
+    1,   1,   0), byrow=T, nrow=3,
+  dimname=list(
+    c('r1', 'r2', 'r3'), # Row names; worlds
+    c('hat', 'glasses', 'mustache'))) # Column names; messages.
 
 ## Science paper referential game:
 fg = matrix(
@@ -50,6 +60,14 @@ ScalarImplicature = function() {
   print(IBR(scalars))
 }
 
+## No Scales condition from the Stiller et al. paper:
+StillerNoscales = function() {
+  print("======================================================================")
+  print('Stiller no scales.')    
+  print(IBR(stiller.noscales))
+  MatrixViz(stiller.noscales)  
+}
+
 ## Science paper referential game:
 FrankGoodman = function() {
   print("======================================================================")
@@ -73,8 +91,9 @@ FromString = function(s) {
 }
 
 ## All demos:
-Demos = function() {
+Demos = function() {  
   ScalarImplicature()
+  StillerNoscales()
   FrankGoodman()
   Division()
   print(FromString('Lstar(Sstar(Lstar(S0(fg), fg)), fg)'))

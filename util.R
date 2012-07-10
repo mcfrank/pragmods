@@ -129,3 +129,39 @@ UniformCosts = function(m) {
   return(matrix(rep(0, length(m)), byrow=T, nrow=nrow(m), dimnames=list(rownames(m), colnames(m))))
 }
 
+######################################################################
+## Map a string s of 1s and 0s to a matrix of dimension nrow. It is
+## assumed that s is given row-wise, in the sense that a row is created
+## after every nrow elements.
+##
+## Arguments:
+##
+## s: a string of 1s and 0s -- must be a length divisible by nrow
+## nrow: number of rows in the resulting matrix
+## row.names: optional row names to add to the output matrix
+## col.names: optional column names to add to the output matrix
+##
+## Value:
+## A binary matrix.
+##
+## Example
+## Str2Matrix('010101110', 3, row.names=NULL, col.names=NULL)
+##
+##      [,1] [,2] [,3]
+## [1,]    0    1    0
+## [2,]    1    0    1
+## [3,]    1    1    0
+
+Str2Matrix = function(s, nrow) {
+  vals = strsplit(s, '')[[1]]
+  vals = as.numeric(vals)
+  m = matrix(vals, nrow=nrow, byrow=TRUE)
+  if (!is.null(row.names)) {
+    rownames(m) = row.names
+  }
+  if (!is.null(col.names)) {
+    colnames(m) = col.names
+  }
+  return(m)
+}
+

@@ -76,3 +76,42 @@ Iterator = function(m, costs=NULL, prior=UniformDistribution(nrow(m)), argmax=TR
   }
   return(seq)
 }
+
+######################################################################
+## An experimental function for visualizing a matrix (a Frank-Goodman
+## one as given by fg in tests.R).  m is the matrix and display.matrix=TRUE
+## (the default) includes a picture of the actual matrix for reference.
+
+FrankGoodmanViz = function(m, display.matrix=TRUE) {
+  
+  ## Function for visualizing a row vector (object with properties):
+  VisualizeObject = function(vec, x, y=0.5) {
+    if (vec[1] == 1) {
+      col = 'blue'
+    }
+    if (vec[2] == 1) {
+      col = 'green'
+    }
+    if (vec[3] == 1) {
+      symbols(x, y=y, square=0.8, bg=col, add=TRUE, inches=FALSE) 
+    }
+    if (vec[4] == 1) {
+       symbols(x, y=y, circles=0.4, bg=col, add=TRUE, inches=FALSE) 
+    }
+  }
+  ## Blank plot window:
+  plot(c(0,1), c(0,1), xlim=c(0.5,3.5), ylim=c(0,1), axes=FALSE, type='n', xlab='', ylab='', main='')  
+  for (i in 1:nrow(m)) {
+    VisualizeObject(m[i, ], i)
+  }
+  if (display.matrix) {
+    ## Used for displaying the raw matrix:
+    library(plotrix)
+    ## Location parameters:
+    textx = 0.5
+    texty = 1
+    xjust = 0
+    ## Add the matrix:
+    addtable2plot(textx, texty, xjust=xjust, yjust=0, m, display.rownames=TRUE, bty='o')
+  }
+}

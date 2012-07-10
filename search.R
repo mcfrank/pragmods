@@ -209,7 +209,7 @@ IbrMaxLength = function(nrow, ncol, include.universal=FALSE, include.ineffable=F
 IbrLengthPlot = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
   df = IbrLengths(nrow, ncol, include.universal=include.universal, include.ineffable=include.ineffable)
   x = xtabs(~ df$Length)
-  title = paste('(', nrow, ' x ', ncol, ') matrices; include.universal=', include.universal, '; include.ineffable=', include.ineffable, '; ', nrow(df), ' matrices', sep='')
+  title = paste(nrow(df), ' (', nrow, ' x ', ncol, ') matrices; include.universal=', include.universal, '; include.ineffable=', include.ineffable, sep='')
   barplot(x, xlab='Length', ylab='Count', main=title, axes=F)
   axis(2, at=as.numeric(x), las=1)
 }

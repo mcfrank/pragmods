@@ -12,7 +12,7 @@ scalars = matrix(
     0,   1,   0,
     0,   1,   1), byrow=T, nrow=3,
   dimname=list(
-    c('w_no', 'w_somenotall', 'w_all'), # Row names; worlds
+    c('w_no', 'w_somenotall', 'w_all'), # Row names; worlds.
     c('NO', 'SOME', 'ALL'))) # Column names; messages.
 
 ## Stiller no-scales, but with the ballcap left null:
@@ -21,7 +21,7 @@ stiller.noscales = matrix(
     0,   1,   0,
     1,   1,   0), byrow=T, nrow=3,
   dimname=list(
-    c('r1', 'r2', 'r3'), # Row names; worlds
+    c('r1', 'r2', 'r3'), # Row names; referents.
     c('hat', 'glasses', 'mustache'))) # Column names; messages.
 
 ## Science paper referential game:

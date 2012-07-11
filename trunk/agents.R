@@ -141,7 +141,7 @@ Listener = function(m, sem, costs=NULL, prior=UniformDistribution(nrow(m)), argm
   for (i in 1:nrow(m)) {
     ## Replacement in the all 0s case:
     if (ZerosVector(m[i, ])) {
-      m[i, ] = sem[i, ]
+      m[i, ] = t(sem)[i, ]
     }
     ## Impose costs otherwise:
     else {

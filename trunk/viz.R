@@ -1,19 +1,39 @@
 
+## Used for displaying the raw matrix:
+library(plotrix)
+
 ######################################################################
 ## Visualize a matrix (any number of rows; at most three columns)
 ## in terms of smiley faces with properties: hat, glasses, mustache.
 ## Value is a 1x3 plot window with specified dimensions so that
 ## everything lands where it should.
 
-MatrixViz = function(m) {
+MatrixViz = function(m, print.matrix=FALSE) {
+  ## Error checking:
   if (ncol(m) > 4) {
     stop(paste("Apologies: I can't handle more than 4 columns/properties"))
   }
-  dev.new(width=nrow(m)*2, height=2)
-  par(mfrow=c(1,nrow(m)), oma=c(0,0,0,0), mar=c(0,0,0,0))
+  ## Parameters for the plotting:
+  plot.width = nrow(m)*2
+  panels = nrow(m)
+  plot.height = 2
+  if (print.matrix) {
+    plot.width = plot.width + 2
+    panels = panels + 1
+  }
+  ## Plot the smileys:
+  dev.new(width=plot.width, height=plot.height)
+  par(mfrow=c(1,panels), oma=c(0,0,0,0), mar=c(0,0,0,0))
   for (i in 1:nrow(m)) {
     Smiley(m[i, ])
   }
+  ## Add a final column for the matrix if requested:
+  if (print.matrix) {
+    ## Blank plot window:
+    plot(c(0,20), c(0,1), type='n', xlab='', ylab='', axes=F)
+    ## Add the matrix:
+    addtable2plot(0, 0.5, m, display.rownames=TRUE, bty='o', cex=0.8)
+  }  
 }
 
 ######################################################################
@@ -130,9 +150,7 @@ FrankGoodmanViz = function(m, display.matrix=TRUE) {
   for (i in 1:nrow(m)) {
     VisualizeObject(m[i, ], i)
   }
-  if (display.matrix) {
-    ## Used for displaying the raw matrix:
-    library(plotrix)
+  if (display.matrix) {   
     ## Location parameters:
     textx = 0.5
     texty = 1

@@ -50,6 +50,17 @@ horncosts = list()
 horncosts[[1]] = t(matrix(c(0,    0, 1/10, 1/10), byrow=T, nrow=2, dimnames=hornnames))
 horncosts[[2]] = matrix(c(0, 1/10,    0, 1/10), byrow=T, nrow=2, dimnames=hornnames)
 
+## A 4x4 case that requires 7 matrices in IBR:
+m7 = matrix(
+  c(0,0,1,1,
+    1,1,0,0,
+    0,1,0,1,
+    1,0,0,1), byrow=T, nrow=4,
+  dimnames=list(paste("t", seq(1,4),sep=''), ## Row names; refernets.
+    c('hat', 'glasses', 'must', 'hair'))) ## Column names; messages.
+  
+
+
 ######################################################################
 ## DEMOS:
 
@@ -90,6 +101,14 @@ FromString = function(s) {
   return(eval(parse(text=s)))
 }
 
+## 4x4 matrix requring 7 iterations (the max):
+Matrix7 = function() {
+  print("======================================================================")
+  print('4 x 4 matrix requiring 7 iterations in IBR')
+  print(IBR(m7))
+  MatrixViz(m7, print.matrix=TRUE)
+}
+
 ## All demos:
 Demos = function() {  
   ScalarImplicature()
@@ -97,6 +116,7 @@ Demos = function() {
   FrankGoodman()
   Division()
   print(FromString('Lstar(Sstar(Lstar(S0(fg), fg)), fg)'))
+  Matrix7()
 }
 
 Demos()

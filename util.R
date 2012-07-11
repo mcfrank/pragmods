@@ -130,22 +130,6 @@ UniformCosts = function(m) {
 }
 
 ######################################################################
-## Convert decimal to binary.
-## From: http://blagrants.blogspot.com/2011/12/decimal-to-binary-in-r.html
-
-## binary<-function(p_number) {
-##   bsum<-0
-##   bexp<-1
-##   while (p_number > 0) {
-##      digit<-p_number %% 2
-##      p_number<-floor(p_number / 2)
-##      bsum<-bsum + digit * bexp
-##      bexp<-bexp * 10
-##   }
-##   return(bsum)
-## }
-
-######################################################################
 ## Given a binary vector x, return the indices of the 1 values:
 ##
 ## Argument:
@@ -194,13 +178,14 @@ GetOneValuedIndices = function(x){
 ## From http://stackoverflow.com/questions/6614283/converting-decimal-to-binary-in-r.
 binary = function(x){paste(sapply(strsplit(paste(rev(intToBits(x))),""),`[[`,2),collapse="")}
 
-BinaryString2Vector = function(i, length) {  
+BinaryString2Vector = function(i, length) {
+  ## This produces a string of 1s and 0s of length 32:
   s = binary(i)  
   ## Split the binary number into digits:
   vals = strsplit(s, '')[[1]]
   ## Convert from string to vector:
   vals = as.numeric(vals)
-  ## Get the suffix:
+  ## Get the suffix of the desired length:
   ind = length(vals)-length+1
   vals = vals[ind:length(vals)]  
   ## Return:

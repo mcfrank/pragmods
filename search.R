@@ -131,6 +131,7 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
   ## Can't use a for loop because R actually tries to
   ## instantiate the full vector of integers 1:powerset.size!
   j = 1
+  print(paste('Total number of matrices to generate and test:', powerset.size))  
   while (j <= powerset.size) {
     ## Get the appropriate binary vector:
     these.indices = BinaryString2Vector(j, ncol(vecs))    
@@ -149,7 +150,10 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
         matind = matind + 1
       }      
     }
-    j = j + 1
+    if (j %% 1000000 == 0) {
+      print(paste('Finished matrix:', j))
+    }
+    j = j + 1    
   }
   return(mats)
 }

@@ -183,7 +183,8 @@ IbrLengths = function(nrow, ncol, include.universal=FALSE, include.ineffable=FAL
   mats = AllBinaryMatrices(nrow, ncol, include.universal=include.universal, include.ineffable=include.ineffable)
   for (mat in mats) {
     seqs = IBR(mat)
-    str = paste(mat, collapse='')    
+    ## Row-wise string representation (use t() to transpose because R defaults to column-wise):
+    str = paste(t(mat), collapse='')    
     len = length(seqs)
     thisdf = data.frame('Matrix'=str, 'Nrow'=nrow, 'Ncol'=ncol, 'Length'=len)
     df = rbind(df, thisdf)

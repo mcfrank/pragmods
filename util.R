@@ -215,7 +215,7 @@ BinaryString2Vector = function(i, length) {
 ## [2,]    1    0    1
 ## [3,]    1    1    0
 
-Str2Matrix = function(s, nrow) {
+Str2Matrix = function(s, nrow, row.names=NULL, col.names=NULL) {
   vals = strsplit(s, '')[[1]]
   vals = as.numeric(vals)
   m = matrix(vals, nrow=nrow, byrow=TRUE)

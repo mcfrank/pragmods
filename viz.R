@@ -6,8 +6,8 @@
 ## everything lands where it should.
 
 MatrixViz = function(m) {
-  if (ncol(m) > 3) {
-    stop(paste("Apologies: I can't handle more than 3 columns/properties"))
+  if (ncol(m) > 4) {
+    stop(paste("Apologies: I can't handle more than 4 columns/properties"))
   }
   dev.new(width=6, height=2)
   par(mfrow=c(1,3), oma=c(0,0,0,0), mar=c(0,0,0,0))
@@ -32,10 +32,16 @@ Smiley = function(vals=c(0,0,0)) {
   yval = 0
   xlim = c(-1.75,1.75)
   ylim = c(-1.75,1.75)  
-  ## Properties:
+  ## Make sure we have a 4-membered value list:
+  shortage = 4 - length(vals)
+  if (shortage > 0) {
+    vals = c(vals, rep(0, shortage))
+  }
+  ## Properties:  
   hat = vals[1]
   glasses = vals[2]
   mustache = vals[3]
+  
   ## Start an empty plot window with the right dimensions:
   plot(xlim, ylim, type='n', xlab='', ylab='', axes=F)  
   ## Head:

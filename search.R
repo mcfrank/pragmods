@@ -128,24 +128,30 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
   }
   ## Indices for the output list:
   matind = 1
-  for (j in 1:powerset.size) {
+  ## Can't use a for loop because R actually tries to
+  ## instantiate the full vector of integers 1:powerset.size!
+  j = 1
+  while (j <= powerset.size) {
     ## Get the appropriate binary vector:
     these.indices = BinaryString2Vector(j, ncol(vecs))    
     ## We need to have ncol number of "on" indices:
     if (sum(these.indices) == ncol) {
+      print(these.indices)
       ## Convert from 0/1 to column indices:
       col.indices = GetOneValuedIndices(these.indices)
       ## Get the matrix:
       thismat = vecs[, col.indices]      
       ## Option to exclude matrices that contain all 0 rows:
       if (include.ineffable == TRUE | ContainsZeroVector(thismat) == FALSE) {
+        print(thismat)
         ## Get the corresponding columns from vecs:           
         rownames(thismat) = row.names
         colnames(thismat) = col.names
         mats[[matind]] = thismat
         matind = matind + 1
-      }
+      }      
     }
+    j = j + 1
   }
   return(mats)
 }

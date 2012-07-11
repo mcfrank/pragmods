@@ -134,15 +134,17 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
   print(paste('Total number of matrices to generate and test:', powerset.size))  
   while (j <= powerset.size) {
     ## Get the appropriate binary vector:
-    these.indices = BinaryString2Vector(j, ncol(vecs))    
+    these.indices = BinaryString2Vector(j, ncol(vecs))
     ## We need to have ncol number of "on" indices:
-    if (sum(these.indices) == ncol) {
+    if (sum(these.indices) == ncol) {      
       ## Convert from 0/1 to column indices:
-      col.indices = GetOneValuedIndices(these.indices)
+      col.indices = GetOneValuedIndices(these.indices)      
       ## Get the matrix:
       thismat = vecs[, col.indices]      
       ## Option to exclude matrices that contain all 0 rows:
       if (include.ineffable == TRUE | ContainsZeroVector(thismat) == FALSE) {
+        ##print(sort(col.indices))
+        ##print(thismat)
         ## Get the corresponding columns from vecs:           
         rownames(thismat) = row.names
         colnames(thismat) = col.names

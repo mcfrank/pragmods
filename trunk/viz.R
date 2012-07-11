@@ -9,8 +9,8 @@ MatrixViz = function(m) {
   if (ncol(m) > 4) {
     stop(paste("Apologies: I can't handle more than 4 columns/properties"))
   }
-  dev.new(width=6, height=2)
-  par(mfrow=c(1,3), oma=c(0,0,0,0), mar=c(0,0,0,0))
+  dev.new(width=nrow(m)*2, height=2)
+  par(mfrow=c(1,nrow(m)), oma=c(0,0,0,0), mar=c(0,0,0,0))
   for (i in 1:nrow(m)) {
     Smiley(m[i, ])
   }
@@ -26,7 +26,7 @@ MatrixViz = function(m) {
 ## vals[2]: add glasses
 ## vals[3]: add a mustache
 
-Smiley = function(vals=c(0,0,0)) {
+Smiley = function(vals=c(0,0,0,0)) {
   ## Basic locating parameters:
   xval = 0
   yval = 0
@@ -41,7 +41,7 @@ Smiley = function(vals=c(0,0,0)) {
   hat = vals[1]
   glasses = vals[2]
   mustache = vals[3]
-  
+  hair = vals[4]
   ## Start an empty plot window with the right dimensions:
   plot(xlim, ylim, type='n', xlab='', ylab='', axes=F)  
   ## Head:
@@ -59,6 +59,19 @@ Smiley = function(vals=c(0,0,0)) {
   ## Mouth (as a parabola):
   mouth.lim = c(xval-0.5, xval+0.5)
   curve((xval-0.75) + x^2, add=TRUE, lwd=10, from=mouth.lim[1], to=mouth.lim[2])
+  ## Used for hair and mustache:
+  hair.col = 'darkgoldenrod4'
+  ## Hair should go on before hat!
+  if (hair == 1) {    
+    hair.y = yval+0.65
+    for (xjit in seq(40,20, by=-1)) {    
+      hx = rep(xval, 2000)
+      hy = rep(hair.y, 2000)
+      points(jitter(hx,factor=xjit), jitter(hy, factor=3), pch=19, col=hair.col)
+      hair.y = hair.y + 0.02
+    }
+    
+  }    
   ## Hat (two rectangles):
   if (hat == 1) {
     hat.col = 'black'
@@ -85,10 +98,10 @@ Smiley = function(vals=c(0,0,0)) {
   ## Goatee (currently somewhat random in appearance due to use of jitter; we might want to fix it):
   if (mustache == 1) {
     gx = rep(xval, 500)
-    gy = rep(yval-0.45, 500)
-    mustache.col = 'darkgoldenrod4'
-    points(jitter(gx,factor=14), jitter(gy, factor=3), pch=19, col=mustache.col)
-  }  
+    gy = rep(yval-0.45, 500)   
+    points(jitter(gx,factor=14), jitter(gy, factor=3), pch=19, col=hair.col)
+  }
+      
 }
 
 ######################################################################

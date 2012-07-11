@@ -4,6 +4,11 @@ library(sets)
 source('ibr.R')
 
 ######################################################################
+##
+
+
+
+######################################################################
 ## Generate all of the possible binary vectors of length nrow. The
 ## result is a matrix in which, intuitively, the rows are entities
 ## and the columns are properties.
@@ -105,7 +110,7 @@ AllBinaryVectors = function(nrow, include.universal=FALSE)  {
 ## t1  1  1
 ## t2  0  1
 
-AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
+AllSetBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
   ## Check for sensible values:
   if(ncol <= 1) {
     stop(paste("Apologies: nrow needs to be greater than 1."))
@@ -171,21 +176,7 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
   }
   return(mats)
 }
-
-Matrix2CanonicalStr = function(m) {
-  ## Turn the rows into string:
-  s = apply(m, 1, function(x){paste(x, collapse='')})
-  ## Sort the strings into a canonical order:
-  s = sort(s)
-  ## Turn them into a single row:
-  s = paste(s, collapse='')
-  return(s)
-}
-  
-
-  
-
-  
+    
 ######################################################################
 ## Exhaustively search through a space of matrices of specified dimension.
 ##
@@ -205,26 +196,39 @@ Matrix2CanonicalStr = function(m) {
 ## the provided arguments, and Lenght is the number of steps required for
 ## convergence.
 
-IbrLengths = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
-  df = data.frame('Matrix'=c(), 'Nrow'=c(), 'Ncol'=c(), 'Length'=c())
-  mats = AllBinaryMatrices(nrow, ncol, include.universal=include.universal, include.ineffable=include.ineffable)
-  for (mat in mats) {
-    seqs = IBR(mat)
-    ## Row-wise string representation (use t() to transpose because R defaults to column-wise):
-    str = paste(t(mat), collapse='')    
-    len = length(seqs)
-    thisdf = data.frame('Matrix'=str, 'Nrow'=nrow, 'Ncol'=ncol, 'Length'=len)
-    df = rbind(df, thisdf)
-  }
+ModelLengths = function(nrow, ncol, models=list('IBR'=IBR, 'SurprisalIBR'=SurprisalIBR), include.universal=FALSE, include.ineffable=FALSE) {
+  ## Get all the matrices, as a list:
+  mats = AllSetBinaryMatrices(nrow, ncol, include.universal=include.universal, include.ineffable=include.ineffable)
+  ## Apply all the models to al the elements of mats:
+  df = ldply(.data=mats, .fun=ApplyAllModels, models, .progress='text')
+  colnames(df) = c('Matrix', names(models))
+  ## Add these dimension columns so  that we can recreate the matrices from teh 
+  df$Nrow = nrow
+  df$Ncol = ncol
+  ## More readable column order:
+  df = df[ , c('Matrix', 'Nrow', 'Ncol', names(models))]  
   return(df)
+}
+
+ApplyAllModels = function(mat, models) {
+  ## Row-wise string representation (use t() to transpose because R defaults to column-wise):
+  str = paste(t(mat), collapse='')
+  ## Output vector of values:
+  vals = c(str)  
+  for (modname in names(models)) {
+    model = models[[modname]]
+    seqs = model(mat)
+    vals = c(vals, length(seqs))
+  }
+  return(vals)
 }
 
 ######################################################################
 ## Return the maximum length for a given matrix space. The arguments
 ## are the same as those for IbrLengths. The value is a float.
 
-IbrMaxLength = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
-  df = IbrLengths(nrow, ncol, include.universal=include.universal, include.ineffable=include.ineffable)
+ModelMaxLength = function(nrow, ncol, model=IBR, include.universal=FALSE, include.ineffable=FALSE) {
+  df = IbrLengths(nrow, ncol, models=c(model), include.universal=include.universal, include.ineffable=include.ineffable)
   return(max(df$Length))
 }
 
@@ -232,11 +236,28 @@ IbrMaxLength = function(nrow, ncol, include.universal=FALSE, include.ineffable=F
 ## PLot the distribution of lengths for a given matrix space. The arguments
 ## are the same as those for IbrLengths. A plot window is produced.
 
-IbrLengthPlot = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
-  df = IbrLengths(nrow, ncol, include.universal=include.universal, include.ineffable=include.ineffable)
+ModelLengthPlot = function(nrow, ncol, model=IBR, include.universal=FALSE, include.ineffable=FALSE) {
+  df = IbrLengths(nrow, ncol, models=c(model), include.universal=include.universal, include.ineffable=include.ineffable)
   x = xtabs(~ df$Length)
   title = paste(nrow(df), ' (', nrow, ' x ', ncol, ') matrices; include.universal=', include.universal, '; include.ineffable=', include.ineffable, sep='')
   barplot(x, xlab='Length', ylab='Count', main=title, axes=F)
   axis(2, at=as.numeric(x), las=1)
 }
+
+######################################################################
+## IBR-specific exploration functions:
+
+IbrMaxLength = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
+  return(ModelMaxLength(nrow, ncol, model=IBR, include.universal=include.universal, include.ineffable=include.ineffable))
+}
+
+IbrLengths = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
+  return(ModelLengths(nrow, ncol, model=IBR, include.universal=include.universal, include.ineffable=include.ineffable))
+}
+
+IbrLengthPlot = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
+  ModelLengthPlot(nrow, ncol, model=IBR, include.universal=include.universal, include.ineffable=include.ineffable)
+}
+
+
 

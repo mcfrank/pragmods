@@ -228,3 +228,17 @@ Str2Matrix = function(s, nrow, row.names=NULL, col.names=NULL) {
   return(m)
 }
 
+######################################################################
+## Map a matrix into a string that is canonical in the sense that
+## the rows have been sorted, which means that matrices differing only
+## in their rows have the same output.
+
+Matrix2CanonicalStr = function(m) {
+  ## Turn the rows into string:
+  s = apply(m, 1, function(x){paste(x, collapse='')})
+  ## Sort the strings into a canonical order:
+  s = sort(s)
+  ## Turn them into a single row:
+  s = paste(s, collapse='')
+  return(s)
+}

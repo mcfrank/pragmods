@@ -18,7 +18,14 @@ source('agents.R')
 ## length(seq) gives the depth of iteration
 
 IBR = function(m, costs=NULL, prior=UniformDistribution(nrow(m)), maxiter=100) {
-  seq = Iterator(m, costs=costs, prior=prior, argmax=TRUE, maxiter=maxiter, digits=20)
+  seq = Iterator(m, costs=costs, prior=prior, argmax=TRUE, maxiter=maxiter, digits=100)
+  return(seq)
+}
+
+######################################################################
+
+SurprisalIBR = function(m, costs=NULL, prior=UniformDistribution(nrow(m)), maxiter=100) {
+  seq = Iterator(m, costs=costs, prior=prior, argmax=TRUE, maxiter=maxiter, digits=100, initial.speaker=SurprisalSpeaker)
   return(seq)
 }
 
@@ -30,13 +37,14 @@ IBR = function(m, costs=NULL, prior=UniformDistribution(nrow(m)), maxiter=100) {
 ## prior: prior over worlds (rows in m); default is a uniform distribution
 ## maxiter: prevents an infinite loop (possible only if there is a bug; default: 100)
 ## digits: number of decimal places to consider when calculating equality of values
+## initial.speaker: either S0 (for classical IBR) or SurprisalSpeaker (for a Frank-Goodman start); default: S0
 ##
 ## Value:
 ##
 ## A list seq with numeric keys, where the values are strategies.
 ## length(seq) gives the depth of iteration
 
-Iterator = function(m, costs=NULL, prior=UniformDistribution(nrow(m)), argmax=TRUE, maxiter=100, digits=100) {
+Iterator = function(m, costs=NULL, prior=UniformDistribution(nrow(m)), argmax=TRUE, maxiter=100, digits=100, initial.speaker=S0) {
   ## We will use this to access the right functions:
   funcs = list()
   funcs[[1]] = Listener
@@ -50,7 +58,7 @@ Iterator = function(m, costs=NULL, prior=UniformDistribution(nrow(m)), argmax=TR
   ## Output data structure:
   seq = list()
   ## Get the base speaker:
-  seq[[1]] = S0(m)
+  seq[[1]] = initial.speaker(m)
   ## We need at least one listener:
   seq[[2]] = Listener(seq[[1]], m, costs=costs[[1]], prior=prior, argmax=argmax)
   ## Now we can iterate:

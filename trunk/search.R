@@ -49,7 +49,8 @@ binary<-function(p_number) {
 ## [1,]    0    1    1
 ## [2,]    1    0    1
 
-AllBinaryVectors = function(nrow, include.universal=FALSE)  {  
+AllBinaryVectors = function(nrow, include.universal=FALSE)  {
+  options(scipen=1000)
   val = 1
   ncol = (2^nrow) - 2
   ## include.empty is now always set to FALSE, because I think
@@ -67,9 +68,10 @@ AllBinaryVectors = function(nrow, include.universal=FALSE)  {
     ncol = ncol + 1    
   }
   ## Output matrix:
+  print(paste(nrow, ncol))
   mat = matrix(rep(0, nrow*ncol), byrow=T, nrow=nrow)
   ## Formatting basis for binary vectors:
-  fmt = paste("%0", nrow, "d", sep='')  
+  fmt = paste("%0", nrow, "s", sep='')
   for (i in 1:ncol) {
     ## Format as a binary number with the right padding:
     s = sprintf(fmt,  binary(val))
@@ -136,30 +138,70 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
   ## The full set of possible vectors; we will draw
   ## subsets of length ncol:
   vecs = AllBinaryVectors(nrow, include.universal=include.universal)
-  ## Column indices, which we turn into a set:
-  indices = seq(1, ncol(vecs))
-  indices = as.set(indices)
-  ## Power-set of column indices:
-  indexSets = 2^indices - set(set())  
-  i = 1
-  for (ind in indexSets) {
-    ## Turn the set/list into a vector of indices:
-    ind = unlist(ind)    
-    ## Where the number of indices is correct:
-    if(length(ind) == ncol) {
-      thismat = vecs[, ind]
+  ## Progress:
+  print(paste('Obtained binary vectors;', length(vecs), 'in all; now building matrix index sets ...'))
+  ## To obain the needed indices, we can use AllBinaryVectors again, this time on the columns of vecs:
+  indices = AllBinaryVectors(ncol(vecs), include.universal=TRUE)
+  matind = 1
+  for (j in 1:ncol(indices)) {
+    these.indices = indices[, j]
+    ## We need to have ncol "on" indices:
+    if (sum(these.indices) == ncol) {
+      ## Convert from 0/1 to column indices:
+      colindices = GetColumnIndices(these.indices)
+      ## Get the matrix:
+      thismat = vecs[, colindices]      
       ## Option to exclude matrices that contain all 0 rows:
-      if (include.ineffable == TRUE | ContainsZeroVector(thismat) == FALSE) {       
+      if (include.ineffable == TRUE | ContainsZeroVector(thismat) == FALSE) {
+        ## print(ind)
         ## Get the corresponding columns from vecs:           
         rownames(thismat) = row.names
         colnames(thismat) = col.names
-        mats[[i]] = thismat
-        i = i + 1
+        mats[[matind]] = thismat
+        matind = matind + 1
       }
     }
   }
-  return(mats)   
+  return(mats)
 }
+
+GetColumnIndices = function(x){
+  vals = c()
+  for (i in 1:length(x)) {
+    if (x[i] == 1){
+      vals = c(vals, i)
+    }
+  }
+  return(vals)
+}
+  
+## Column indices, which we turn into a set:
+##indices = seq(1, ncol(vecs))
+##indices = as.set(indices)
+## Power-set of column indices:
+##indexSets = 2^indices - set(set())
+## Progress:
+##   print(paste('Obtained all index sets;', length(indexSets), 'in all; now building matrices ...'))
+##   i = 1
+##   for (ind in indexSets) {   
+##     ## Turn the set/list into a vector of indices:
+##     ind = unlist(ind)    
+##     ## Where the number of indices is correct:
+##     if(length(ind) == ncol) {
+##       thismat = vecs[, ind]
+##       ## Option to exclude matrices that contain all 0 rows:
+##       if (include.ineffable == TRUE | ContainsZeroVector(thismat) == FALSE) {
+##         ## print(ind)
+##         ## Get the corresponding columns from vecs:           
+##         rownames(thismat) = row.names
+##         colnames(thismat) = col.names
+##         mats[[i]] = thismat
+##         i = i + 1
+##       }
+##     }
+##   }
+##   return(mats)   
+## }
 
 ######################################################################
 ## Exhaustively search through a space of matrices of specified dimension.

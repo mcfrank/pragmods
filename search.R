@@ -4,22 +4,6 @@ library(sets)
 source('ibr.R')
 
 ######################################################################
-## Convert decimal to binary.
-## From: http://blagrants.blogspot.com/2011/12/decimal-to-binary-in-r.html
-
-binary<-function(p_number) {
-  bsum<-0
-  bexp<-1
-  while (p_number > 0) {
-     digit<-p_number %% 2
-     p_number<-floor(p_number / 2)
-     bsum<-bsum + digit * bexp
-     bexp<-bexp * 10
-  }
-  return(bsum)
-}
-
-######################################################################
 ## Generate all of the possible binary vectors of length nrow. The
 ## result is a matrix in which, intuitively, the rows are entities
 ## and the columns are properties.
@@ -68,16 +52,15 @@ AllBinaryVectors = function(nrow, include.universal=FALSE)  {
     ncol = ncol + 1    
   }
   ## Output matrix:
-  print(paste(nrow, ncol))
   mat = matrix(rep(0, nrow*ncol), byrow=T, nrow=nrow)
-  ## Formatting basis for binary vectors:
-  fmt = paste("%0", nrow, "s", sep='')
+  ## Formatting basis for binary vectors; we use
+  ## val rather than i for the counting so that we
+  ## can optionally start at 0 even as we index into
+  ## mat, where the lowest value allowed is 1.  
   for (i in 1:ncol) {
-    ## Format as a binary number with the right padding:
-    s = sprintf(fmt,  binary(val))
-    ## Split the binary number into digits and convert to vector:
-    vals = strsplit(s, '')[[1]]
-    vals = as.numeric(vals)
+    ## Map this integer value to a binary value
+    ## and use that to obtain a binary vector:
+    vals = BinaryString2Vector(val, nrow)
     ## Add the resulting vector to the matrix:
     mat[, i] = vals
     ## Increment:
@@ -138,22 +121,24 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
   ## The full set of possible vectors; we will draw
   ## subsets of length ncol:
   vecs = AllBinaryVectors(nrow, include.universal=include.universal)
-  ## Progress:
-  print(paste('Obtained binary vectors;', length(vecs), 'in all; now building matrix index sets ...'))
-  ## To obain the needed indices, we can use AllBinaryVectors again, this time on the columns of vecs:
-  indices = AllBinaryVectors(ncol(vecs), include.universal=TRUE)
+  ## Number of matrices we need to consider:
+  powerset.size = 2^(ncol(vecs))
+  if (!include.universal) {
+    powerset.size = powerset.size - 1
+  }
+  ## Indices for the output list:
   matind = 1
-  for (j in 1:ncol(indices)) {
-    these.indices = indices[, j]
-    ## We need to have ncol "on" indices:
+  for (j in 1:powerset.size) {
+    ## Get the appropriate binary vector:
+    these.indices = BinaryString2Vector(j, ncol(vecs))    
+    ## We need to have ncol number of "on" indices:
     if (sum(these.indices) == ncol) {
       ## Convert from 0/1 to column indices:
-      colindices = GetColumnIndices(these.indices)
+      col.indices = GetOneValuedIndices(these.indices)
       ## Get the matrix:
-      thismat = vecs[, colindices]      
+      thismat = vecs[, col.indices]      
       ## Option to exclude matrices that contain all 0 rows:
       if (include.ineffable == TRUE | ContainsZeroVector(thismat) == FALSE) {
-        ## print(ind)
         ## Get the corresponding columns from vecs:           
         rownames(thismat) = row.names
         colnames(thismat) = col.names
@@ -165,44 +150,7 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
   return(mats)
 }
 
-GetColumnIndices = function(x){
-  vals = c()
-  for (i in 1:length(x)) {
-    if (x[i] == 1){
-      vals = c(vals, i)
-    }
-  }
-  return(vals)
-}
   
-## Column indices, which we turn into a set:
-##indices = seq(1, ncol(vecs))
-##indices = as.set(indices)
-## Power-set of column indices:
-##indexSets = 2^indices - set(set())
-## Progress:
-##   print(paste('Obtained all index sets;', length(indexSets), 'in all; now building matrices ...'))
-##   i = 1
-##   for (ind in indexSets) {   
-##     ## Turn the set/list into a vector of indices:
-##     ind = unlist(ind)    
-##     ## Where the number of indices is correct:
-##     if(length(ind) == ncol) {
-##       thismat = vecs[, ind]
-##       ## Option to exclude matrices that contain all 0 rows:
-##       if (include.ineffable == TRUE | ContainsZeroVector(thismat) == FALSE) {
-##         ## print(ind)
-##         ## Get the corresponding columns from vecs:           
-##         rownames(thismat) = row.names
-##         colnames(thismat) = col.names
-##         mats[[i]] = thismat
-##         i = i + 1
-##       }
-##     }
-##   }
-##   return(mats)   
-## }
-
 ######################################################################
 ## Exhaustively search through a space of matrices of specified dimension.
 ##
@@ -255,5 +203,4 @@ IbrLengthPlot = function(nrow, ncol, include.universal=FALSE, include.ineffable=
   barplot(x, xlab='Length', ylab='Count', main=title, axes=F)
   axis(2, at=as.numeric(x), las=1)
 }
-
 

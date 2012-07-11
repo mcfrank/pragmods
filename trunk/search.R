@@ -131,6 +131,10 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
   ## Can't use a for loop because R actually tries to
   ## instantiate the full vector of integers 1:powerset.size!
   j = 1
+  ## This is used to filter out matrices that are row-permutations of
+  ## ones we've already sen.
+  all.matrix.string.reps = c()
+  ## Upped-bound estimate --- generally much larger than the output set:
   print(paste('Total number of matrices to generate and test:', powerset.size))  
   while (j <= powerset.size) {
     ## Get the appropriate binary vector:
@@ -140,17 +144,22 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
       ## Convert from 0/1 to column indices:
       col.indices = GetOneValuedIndices(these.indices)      
       ## Get the matrix:
-      thismat = vecs[, col.indices]      
-      ## Option to exclude matrices that contain all 0 rows:
-      if (include.ineffable == TRUE | ContainsZeroVector(thismat) == FALSE) {
-        ##print(sort(col.indices))
-        ##print(thismat)
-        ## Get the corresponding columns from vecs:           
-        rownames(thismat) = row.names
-        colnames(thismat) = col.names
-        mats[[matind]] = thismat
-        matind = matind + 1
-      }      
+      thismat = vecs[, col.indices]
+      ## Canonical (row-permutation invariant) string version:
+      matstr = Matrix2CanonicalStr(thismat)
+      if (!matstr %in% all.matrix.string.reps) {
+        all.matrix.string.reps  = c(all.matrix.string.reps, matstr)      
+        ## Option to exclude matrices that contain all 0 rows:
+        if (include.ineffable == TRUE | ContainsZeroVector(thismat) == FALSE) {
+          ##print(sort(col.indices))
+          ##print(thismat)
+          ## Get the corresponding columns from vecs:           
+          rownames(thismat) = row.names
+          colnames(thismat) = col.names
+          mats[[matind]] = thismat
+          matind = matind + 1
+        }
+      }
     }
     if (j %% 1000000 == 0) {
       print(paste('Finished matrix:', j))
@@ -159,6 +168,19 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
   }
   return(mats)
 }
+
+Matrix2CanonicalStr = function(m) {
+  ## Turn the rows into string:
+  s = apply(m, 1, function(x){paste(x, collapse='')})
+  ## Sort the strings into a canonical order:
+  s = sort(s)
+  ## Turn them into a single row:
+  s = paste(s, collapse='')
+  return(s)
+}
+  
+
+  
 
   
 ######################################################################

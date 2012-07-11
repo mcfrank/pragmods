@@ -40,7 +40,7 @@ AllBinaryVectors = function(nrow, include.universal=FALSE)  {
   ## include.empty is now always set to FALSE, because I think
   ## the model can't accommodate it -- it creates surprise rows 
   ## whose semantics is also surprising and hence there is
-  ## no startegy to resort to.
+  ## no strategy to resort to.
   include.empty = FALSE
   ## If starting with the all 0s column:
   if (include.empty) {
@@ -132,7 +132,7 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
   ## instantiate the full vector of integers 1:powerset.size!
   j = 1
   ## This is used to filter out matrices that are row-permutations of
-  ## ones we've already sen.
+  ## ones we've already seen.
   all.matrix.string.reps = c()
   ## Upped-bound estimate --- generally much larger than the output set:
   print(paste('Total number of matrices to generate and test:', powerset.size))  
@@ -147,23 +147,26 @@ AllBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffa
       thismat = vecs[, col.indices]
       ## Canonical (row-permutation invariant) string version:
       matstr = Matrix2CanonicalStr(thismat)
+      ## If we've not seen this matrix-type before:
       if (!matstr %in% all.matrix.string.reps) {
+        ## Add this matrix to the library:
         all.matrix.string.reps  = c(all.matrix.string.reps, matstr)      
         ## Option to exclude matrices that contain all 0 rows:
         if (include.ineffable == TRUE | ContainsZeroVector(thismat) == FALSE) {
-          ##print(sort(col.indices))
-          ##print(thismat)
           ## Get the corresponding columns from vecs:           
           rownames(thismat) = row.names
           colnames(thismat) = col.names
           mats[[matind]] = thismat
+          ## Increment the matrix counter:
           matind = matind + 1
         }
       }
     }
+    ## Progress report for very large runs:
     if (j %% 1000000 == 0) {
       print(paste('Finished matrix:', j))
     }
+    ## Increment the while-loop counter:
     j = j + 1    
   }
   return(mats)

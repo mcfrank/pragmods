@@ -130,6 +130,67 @@ UniformCosts = function(m) {
 }
 
 ######################################################################
+## Convert decimal to binary.
+## From: http://blagrants.blogspot.com/2011/12/decimal-to-binary-in-r.html
+
+binary<-function(p_number) {
+  bsum<-0
+  bexp<-1
+  while (p_number > 0) {
+     digit<-p_number %% 2
+     p_number<-floor(p_number / 2)
+     bsum<-bsum + digit * bexp
+     bexp<-bexp * 10
+  }
+  return(bsum)
+}
+
+######################################################################
+## Given a binary vector x, return the indices of the 1 values:
+##
+## Argument:
+## x: binary vector
+##
+## Value:
+## An integer vector:
+##
+## For example, GetOneValuedIndices(c(0,1,0,1)) returns c(2,4).
+
+GetOneValuedIndices = function(x){
+  vals = c()
+  for (i in 1:length(x)) {
+    if (x[i] == 1){
+      vals = c(vals, i)
+    }
+  }
+  return(vals)
+}
+
+######################################################################
+## Map an integer to a binary vector:
+##
+## Arguments:
+## i: integer to convert
+## length: length of the resulting vector
+##
+## Value:
+## a binary vector
+##
+## Note: crucial to use "s" for formatting; "d" fails for large values
+
+BinaryString2Vector = function(i, length) {
+  ## Format the binary form of i with 0-padding to length:
+  fmt = paste("%0", length, "s", sep='')
+  s = sprintf(fmt,  binary(i))
+  ## Split the binary number into digits:
+  vals = strsplit(s, '')[[1]]
+  ## Convert from string to vector:
+  vals = as.numeric(vals)
+  ## Return:
+  return(vals)
+}
+
+######################################################################
 ## Map a string s of 1s and 0s to a matrix of dimension nrow. It is
 ## assumed that s is given row-wise, in the sense that a row is created
 ## after every nrow elements.

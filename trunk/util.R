@@ -181,6 +181,7 @@ GetOneValuedIndices = function(x){
 BinaryString2Vector = function(i, length) {
   ## Format the binary form of i with 0-padding to length:
   fmt = paste("%0", length, "s", sep='')
+  print(binary(i))
   s = sprintf(fmt,  binary(i))
   ## Split the binary number into digits:
   vals = strsplit(s, '')[[1]]

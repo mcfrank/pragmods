@@ -105,6 +105,10 @@ AllBinaryMatrices = function(nrow, ncol,
     }
     ## Increment while-loop counter:
     j = j + 1
+    ## Progress report for very large runs:
+    if (j %% 100000 == 0) {
+      print(paste('Finished matrix:', j))
+    }
   }
   return(mats)
 }

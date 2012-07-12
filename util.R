@@ -314,6 +314,11 @@ Matrix2CanonicalStr = function(m) {
   s = apply(m, 1, function(x){paste(x, collapse='')})
   ## Sort the strings into a canonical order:
   s = sort(s)
+  s = paste(s, collapse='')
+  vec = as.numeric(strsplit(s, '')[[1]])
+  m = matrix(vec, byrow=T, nrow=nrow(m))
+  s = apply(m, 2, function(x){paste(x, collapse='')})
+  s = sort(s)
   ## Turn them into a single row:
   s = paste(s, collapse='')
   return(s)

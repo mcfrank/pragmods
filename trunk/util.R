@@ -28,7 +28,6 @@ VecNormalize = function(row){
 ## Value:
 ## a numeric vector of the same length as row
 
-## Zero-out non-maximal elements 
 VecMax = function(row){  
   row = sapply(row, function(x){ifelse(x==max(row), x, 0)})
   return(row)
@@ -95,32 +94,33 @@ UnitVector = function(x) {
 
 ######################################################################
 ## Determine whether a matric contains a Universal (Unit) vector:
-##
-## Argument:
-## m: a binary matrix
-## Value:
-## boolean: TRUE if m contains a unit vector, else FALSE
-    
+
+ContainsUniversalRow = function(m) {
+  ContainsUniversalVector(m, 1)  
+}
+
 ContainsUniversalCol = function(m) {
-  colvals = apply(m, 2, UnitVector)
-  if (TRUE %in% colvals) {
-    return(TRUE)
-  }
-  else {
-    return(FALSE)
-  }
+  ContainsUniversalVector(m, 2)  
 }
 
-######################################################################
-## Determine whether a matric contains a Universal (Unit) vector:
-##
-## Argument:
-## m: a binary matrix
-## Value:
-## boolean: TRUE if m contains a unit vector, else FALSE
-    
+ContainsUniversalVector = function(m, dir) {
+  return(ContainsVectorType(m, dir, UnitVector))
+}
+
+ContainsZerosRow = function(m) {
+  return(ContainsZerosVector(m, 1))
+}
+
 ContainsZerosCol = function(m) {
-  colvals = apply(m, 2, ZerosVector)
+  return(ContainsZerosVector(m, 2))
+}
+
+ContainsZerosVector = function(m, dir) {
+  return(ContainsVectorType(m, dir, ZerosVector))
+}
+
+ContainsVectorType = function(m, dir, func) {
+  colvals = apply(m, dir, func)
   if (TRUE %in% colvals) {
     return(TRUE)
   }
@@ -128,7 +128,6 @@ ContainsZerosCol = function(m) {
     return(FALSE)
   }
 }
-
 ######################################################################
 ## Determine whether the matrix m contains a row of all 0s.
 

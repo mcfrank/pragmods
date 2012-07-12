@@ -11,7 +11,7 @@
 ## Value:
 ## a numeric vector of the same length as row
 
-VecNormalize = function(row){
+VecNormalize = function(row){  
   if (sum(row) > 0) {
     return(row/sum(row))
   }

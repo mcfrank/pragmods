@@ -47,6 +47,7 @@ source('ibr.R')
 ## because it is a permutation of [[1]] obtained by exchanging both rows and columns.
 
 AllBinaryMatrices = function(nrow, ncol,
+  include.permutation.variants=FALSE,
   include.row.repeats=TRUE, include.col.repeats=TRUE,
   include.empty.cols=TRUE, include.univ.cols=TRUE,
   include.empty.rows=TRUE, include.univ.rows=TRUE) {
@@ -73,7 +74,7 @@ AllBinaryMatrices = function(nrow, ncol,
     matstr = Matrix2CanonicalStr(thismat)
     ## Iff we've never seen a row or column permutation variant of
     ## this matrix, we process it:
-    if (!matstr %in% matlib) {
+    if (include.permutation.variants == TRUE | (matstr %in% matlib)==FALSE) {
       ## Add this matrix to the library:
       matlib = c(matlib, matstr)
       ## Exclude matrices that contain 0s columns, since the model
@@ -128,6 +129,7 @@ AllBinaryMatrices = function(nrow, ncol,
 ## convergence.
 
 ModelLengths = function(nrow, ncol, models='IBR',
+  include.permutation.variants=FALSE,
   include.row.repeats=TRUE, include.col.repeats=TRUE,
   include.univ.cols=TRUE,
   include.empty.rows=TRUE, include.univ.rows=TRUE) {
@@ -169,6 +171,7 @@ ApplyAllModels = function(mat, models) {
 ## are the same as those for IbrLengths. A plot window is produced.
 
 ModelLengthPlot = function(nrow, ncol, model='IBR',
+  include.permutation.variants=FALSE,
   include.row.repeats=TRUE, include.col.repeats=TRUE,
   include.univ.cols=TRUE,
   include.empty.rows=TRUE, include.univ.rows=TRUE) {

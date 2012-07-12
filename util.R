@@ -75,9 +75,64 @@ ZerosVector = function(x) {
 }
 
 ######################################################################
+## Determine whether the vector x contains all and only 1s.
+##
+## Argument:
+## x: a numeric vector
+## Value:
+## boolean: TRUE if x contains only 1s, else FALSE
+
+UnitVector = function(x) {
+  rowset = unique(as.numeric(x))
+  ## Check for all 1s:
+  if (length(rowset) == 1 & rowset[1] == 1) {
+    return(TRUE)
+  }
+  else {
+    return(FALSE)
+  }
+}
+
+######################################################################
+## Determine whether a matric contains a Universal (Unit) vector:
+##
+## Argument:
+## m: a binary matrix
+## Value:
+## boolean: TRUE if m contains a unit vector, else FALSE
+    
+ContainsUniversalCol = function(m) {
+  colvals = apply(m, 2, UnitVector)
+  if (TRUE %in% colvals) {
+    return(TRUE)
+  }
+  else {
+    return(FALSE)
+  }
+}
+
+######################################################################
+## Determine whether a matric contains a Universal (Unit) vector:
+##
+## Argument:
+## m: a binary matrix
+## Value:
+## boolean: TRUE if m contains a unit vector, else FALSE
+    
+ContainsZerosCol = function(m) {
+  colvals = apply(m, 2, ZerosVector)
+  if (TRUE %in% colvals) {
+    return(TRUE)
+  }
+  else {
+    return(FALSE)
+  }
+}
+
+######################################################################
 ## Determine whether the matrix m contains a row of all 0s.
 
-ContainsZeroVector = function(m) {
+ContainsZerosRow = function(m) {
   vals = apply(m, 1, ZerosVector)
   if (TRUE %in% vals) {
     return(TRUE)
@@ -86,6 +141,28 @@ ContainsZeroVector = function(m) {
     return(FALSE)
   }
 }
+
+######################################################################
+##
+
+ContainsRowRepeats = function(m) {
+  ContainsRepeats(m, 1)
+}
+
+ContainsColRepeats = function(m) {
+  ContainsRepeats(m, 2)
+}
+
+ContainsRepeats = function(m, dir) {
+  s = apply(m, dir, function(x){paste(x, collapse='')})
+  if (length(s) > length(unique(s))) {
+    return(TRUE)
+  }
+  else {
+    return(FALSE)
+  }  
+}
+  
 
 ######################################################################
 ## If the numeric vector argument row contains only 0s, map it to a
@@ -178,7 +255,7 @@ GetOneValuedIndices = function(x){
 ## From http://stackoverflow.com/questions/6614283/converting-decimal-to-binary-in-r.
 binary = function(x){paste(sapply(strsplit(paste(rev(intToBits(x))),""),`[[`,2),collapse="")}
 
-BinaryString2Vector = function(i, length) {
+Integer2BinaryVector = function(i, length) {
   ## This produces a string of 1s and 0s of length 32:
   s = binary(i)  
   ## Split the binary number into digits:

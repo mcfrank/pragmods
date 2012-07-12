@@ -1,182 +1,76 @@
-
-library(sets)
+library(plyr)
 
 source('ibr.R')
 
 ######################################################################
 ##
 
-
-
-######################################################################
-## Generate all of the possible binary vectors of length nrow. The
-## result is a matrix in which, intuitively, the rows are entities
-## and the columns are properties.
-##
-## Arguments:
-##
-## nrow: the number of (worlds/referents) to have
-## include.universal: whether to include columns with all 1s (default: FALSE)
-##
-## For example,
-##
-## AllBinaryVectors(2)
-##
-## returns
-##
-##      [,1] [,2]
-## [1,]    0    1
-## [2,]    1    0
-##
-## whereas
-##
-## AllBinaryVectors(2, include.universal=T)
-##
-## returns
-##
-##      [,1] [,2] [,3]
-## [1,]    0    1    1
-## [2,]    1    0    1
-
-AllBinaryVectors = function(nrow, include.universal=FALSE)  {
-  options(scipen=1000)
-  val = 1
-  ncol = (2^nrow) - 2
-  ## include.empty is now always set to FALSE, because I think
-  ## the model can't accommodate it -- it creates surprise rows 
-  ## whose semantics is also surprising and hence there is
-  ## no strategy to resort to.
-  include.empty = FALSE
-  ## If starting with the all 0s column:
-  if (include.empty) {
-    val = 0
-    ncol = ncol + 1    
-  }
-  ## If finishing with the all 1s column:
-  if (include.universal) {
-    ncol = ncol + 1    
-  }
-  ## Output matrix:
-  mat = matrix(rep(0, nrow*ncol), byrow=T, nrow=nrow)
-  ## Formatting basis for binary vectors; we use
-  ## val rather than i for the counting so that we
-  ## can optionally start at 0 even as we index into
-  ## mat, where the lowest value allowed is 1.  
-  for (i in 1:ncol) {
-    ## Map this integer value to a binary value
-    ## and use that to obtain a binary vector:
-    vals = BinaryString2Vector(val, nrow)
-    ## Add the resulting vector to the matrix:
-    mat[, i] = vals
-    ## Increment:
-    val = val + 1
-  }
-  return(mat)
-}
-
-######################################################################
-## Generate all binary matrices of dimension (nrow x ncol) that are
-## distinguishable if we think of the columns as picking out sets of
-## entities.
-##
-## Empty properties (all 0 columns) and universal properties (all 1 columns)
-## are not included.
-##
-## Arguments:
-##
-## nrow: the number of (worlds/referents) to have
-## ncol: number of columns (properties/messages) to have
-## include.universal: whether to include columns with all 1s (default: FALSE)
-## include.ineffable: whether to have any all 0s rows (default: FALSE)
-##
-## For example,
-##
-## AllBinaryMatrices(2, 2, include.universal=T)
-##
-## delivers
-##
-## [[1]]
-##    m1 m2
-## t1  0  1
-## t2  1  0
-##
-## [[2]]
-##    m1 m2
-## t1  0  1
-## t2  1  1
-##
-## [[3]]
-##    m1 m2
-## t1  1  1
-## t2  0  1
-
-AllSetBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
-  ## Check for sensible values:
-  if(ncol <= 1) {
-    stop(paste("Apologies: nrow needs to be greater than 1."))
-  }
-  if (nrow < ncol) {
-    stop(paste("Apologies: nrow needs to be at least as large as the ncol."))
-  } 
+AllBinaryMatrices = function(nrow, ncol, include.row.repeats=TRUE, include.col.repeats=TRUE, include.empty=TRUE, include.universal=TRUE, include.ineffable=TRUE) {
+  total = nrow*ncol
+  matcount = 2^total
+  ## These are used to filter out matrices that are row-permutations of
+  ## ones we've already seen or column permutations of ones we've
+  ## already seen:
+  row.matlib = c()
+  col.matlib = c()  
+  ## Output data structure
+  mats = list()
+  ## Increment the matrix counter:
+  matind = 1
   ## Intuitive row and column names:
   row.names = paste('t', seq(1,nrow), sep='')
   col.names = paste('m', seq(1,ncol), sep='')
-  ## Output list of matrices:
-  mats = list()
-  ## The full set of possible vectors; we will draw
-  ## subsets of length ncol:
-  vecs = AllBinaryVectors(nrow, include.universal=include.universal)
-  ## Number of matrices we need to consider:
-  powerset.size = 2^(ncol(vecs))
-  if (!include.universal) {
-    powerset.size = powerset.size - 1
-  }
-  ## Indices for the output list:
-  matind = 1
-  ## Can't use a for loop because R actually tries to
-  ## instantiate the full vector of integers 1:powerset.size!
+  ## Iterate with a while loop so that R doesn't try to build the
+  ## whole 1:matcount vector:
   j = 1
-  ## This is used to filter out matrices that are row-permutations of
-  ## ones we've already seen.
-  all.matrix.string.reps = c()
-  ## Upped-bound estimate --- generally much larger than the output set:
-  print(paste('Total number of matrices to generate and test:', powerset.size))  
-  while (j <= powerset.size) {
-    ## Get the appropriate binary vector:
-    these.indices = BinaryString2Vector(j, ncol(vecs))
-    ## We need to have ncol number of "on" indices:
-    if (sum(these.indices) == ncol) {      
-      ## Convert from 0/1 to column indices:
-      col.indices = GetOneValuedIndices(these.indices)      
-      ## Get the matrix:
-      thismat = vecs[, col.indices]
-      ## Canonical (row-permutation invariant) string version:
-      matstr = Matrix2CanonicalStr(thismat)
-      ## If we've not seen this matrix-type before:
-      if (!matstr %in% all.matrix.string.reps) {
-        ## Add this matrix to the library:
-        all.matrix.string.reps  = c(all.matrix.string.reps, matstr)      
-        ## Option to exclude matrices that contain all 0 rows:
-        if (include.ineffable == TRUE | ContainsZeroVector(thismat) == FALSE) {
-          ## Get the corresponding columns from vecs:           
-          rownames(thismat) = row.names
-          colnames(thismat) = col.names
-          mats[[matind]] = thismat
-          ## Increment the matrix counter:
-          matind = matind + 1
+  while (j <= matcount) {
+    ## Get the nrow x ncol matrix associated with the binary version of j:
+    vec = Integer2BinaryVector(j, total)
+    thismat = matrix(vec, byrow=TRUE, nrow=nrow)
+    ## Canonical (permutation invariant) string versions:
+    matstr.row = Matrix2CanonicalStr(thismat)
+    matstr.col = Matrix2CanonicalStr(t(thismat))
+    ## If we've this matrix-type before, in terms of permutations on rows or columns,
+    ## then we register its canonical form for both but we don't do anything
+    ## else:    
+    ##if (!matstr.row %in% row.matlib | matstr.col %in% col.matlib) {
+    ## col.matlib = c(col.matlib, matstr.col)
+    ## row.matlib = c(row.matlib, matstr.row)
+   ## }
+    ## If this is new in terms of permutations on both rows and columns:
+   ## else {
+      ## Add this matrix to the libraries:
+      row.matlib = c(row.matlib, matstr.row)
+      col.matlib = c(col.matlib, matstr.col)
+      ## Exclude matrices that contain 0s columns, since the model
+      ## is not able to recover from such situations:
+      if (include.empty | ContainsZerosCol(thismat) == FALSE) {
+        ## Option to exclude matrices in which a column has all 1s:
+        if (include.universal == TRUE | ContainsUniversalCol(thismat)==FALSE) {
+          ## Option to exclude matrices that contain all 0 rows:
+          if (include.ineffable == TRUE | ContainsZeroVector(thismat) == FALSE) {
+            ## Option to exclude matrices with repeated rows:
+            if (include.row.repeats == TRUE | ContainsRowRepeats(thismat) == FALSE) {
+              ## Option to exclude matrices with repeated rows:
+              if (include.col.repeats == TRUE | ContainsColRepeats(thismat) == FALSE) {
+                ## Get the corresponding columns from vecs:           
+                rownames(thismat) = row.names
+                colnames(thismat) = col.names
+                mats[[matind]] = thismat
+                ## Increment the matrix counter:
+                matind = matind + 1
+              }
+            }
+          }
         }
       }
-    }
-    ## Progress report for very large runs:
-    if (j %% 1000000 == 0) {
-      print(paste('Finished matrix:', j))
-    }
-    ## Increment the while-loop counter:
-    j = j + 1    
+    ##}
+    ## Increment while-loop counter:
+    j = j + 1
   }
   return(mats)
 }
-    
+
 ######################################################################
 ## Exhaustively search through a space of matrices of specified dimension.
 ##
@@ -196,11 +90,18 @@ AllSetBinaryMatrices = function(nrow, ncol, include.universal=FALSE, include.ine
 ## the provided arguments, and Lenght is the number of steps required for
 ## convergence.
 
-ModelLengths = function(nrow, ncol, models=list('IBR'=IBR, 'SurprisalIBR'=SurprisalIBR), include.universal=FALSE, include.ineffable=FALSE) {
+ModelLengths = function(nrow, ncol, models=list('IBR'=IBR, 'SurprisalIBR'=SurprisalIBR),
+  include.row.repeats=TRUE, include.col.repeats=TRUE,
+  include.universal=TRUE, include.ineffable=TRUE) {
   ## Get all the matrices, as a list:
-  mats = AllSetBinaryMatrices(nrow, ncol, include.universal=include.universal, include.ineffable=include.ineffable)
+  mats = AllBinaryMatrices(nrow, ncol,
+    include.row.repeats=include.row.repeats,
+    include.col.repeats=include.col.repeats,
+    include.empty=FALSE,
+    include.universal=include.universal,
+    include.ineffable=include.ineffable)
   ## Apply all the models to al the elements of mats:
-  df = ldply(.data=mats, .fun=ApplyAllModels, models, .progress='text')
+  df = ldply(.data=mats, .fun=ApplyAllModels, models) ##, .progress='text')
   colnames(df) = c('Matrix', names(models))
   ## Add these dimension columns so  that we can recreate the matrices from teh 
   df$Nrow = nrow
@@ -227,8 +128,13 @@ ApplyAllModels = function(mat, models) {
 ## Return the maximum length for a given matrix space. The arguments
 ## are the same as those for IbrLengths. The value is a float.
 
-ModelMaxLength = function(nrow, ncol, model=IBR, include.universal=FALSE, include.ineffable=FALSE) {
-  df = IbrLengths(nrow, ncol, models=c(model), include.universal=include.universal, include.ineffable=include.ineffable)
+ModelMaxLength = function(nrow, ncol, model=IBR,
+  include.row.repeats=TRUE, include.col.repeats=TRUE, include.universal=TRUE, include.ineffable=TRUE) {
+  df = ModelLengths(nrow, ncol, models=c(model),
+    include.row.repeats=include.row.repeats,
+    include.col.repeats=include.col.repeats,
+    include.universal=include.universal,
+    include.ineffable=include.ineffable)
   return(max(df$Length))
 }
 
@@ -236,9 +142,14 @@ ModelMaxLength = function(nrow, ncol, model=IBR, include.universal=FALSE, includ
 ## PLot the distribution of lengths for a given matrix space. The arguments
 ## are the same as those for IbrLengths. A plot window is produced.
 
-ModelLengthPlot = function(nrow, ncol, model=IBR, include.universal=FALSE, include.ineffable=FALSE) {
-  df = IbrLengths(nrow, ncol, models=c(model), include.universal=include.universal, include.ineffable=include.ineffable)
-  x = xtabs(~ df$Length)
+ModelLengthPlot = function(nrow, ncol, model=list('IBR'=IBR),
+  include.row.repeats=TRUE, include.col.repeats=TRUE, include.universal=TRUE, include.ineffable=TRUE) {
+  df = ModelLengths(nrow, ncol, models=c(model),
+    include.row.repeats=include.row.repeats,
+    include.col.repeats=include.col.repeats,
+    include.universal=include.universal,
+    include.ineffable=include.ineffable)
+  x = xtabs(~ df[, names(model)])
   title = paste(nrow(df), ' (', nrow, ' x ', ncol, ') matrices; include.universal=', include.universal, '; include.ineffable=', include.ineffable, sep='')
   barplot(x, xlab='Length', ylab='Count', main=title, axes=F)
   axis(2, at=as.numeric(x), las=1)
@@ -247,17 +158,17 @@ ModelLengthPlot = function(nrow, ncol, model=IBR, include.universal=FALSE, inclu
 ######################################################################
 ## IBR-specific exploration functions:
 
-IbrMaxLength = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
-  return(ModelMaxLength(nrow, ncol, model=IBR, include.universal=include.universal, include.ineffable=include.ineffable))
-}
+## IbrMaxLength = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
+##   return(ModelMaxLength(nrow, ncol, model=IBR, include.universal=include.universal, include.ineffable=include.ineffable))
+## }
 
-IbrLengths = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
-  return(ModelLengths(nrow, ncol, model=IBR, include.universal=include.universal, include.ineffable=include.ineffable))
-}
+## IbrLengths = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
+##   return(ModelLengths(nrow, ncol, model=IBR, include.universal=include.universal, include.ineffable=include.ineffable))
+## }
 
-IbrLengthPlot = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
-  ModelLengthPlot(nrow, ncol, model=IBR, include.universal=include.universal, include.ineffable=include.ineffable)
-}
+## IbrLengthPlot = function(nrow, ncol, include.universal=FALSE, include.ineffable=FALSE) {
+##   ModelLengthPlot(nrow, ncol, model=IBR, include.universal=include.universal, include.ineffable=include.ineffable)
+## }
 
 
 

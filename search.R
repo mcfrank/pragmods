@@ -4,6 +4,47 @@ source('ibr.R')
 
 ######################################################################
 ##
+##
+## Arguments:
+##
+## nrow: number of rows (worlds/referents) to have
+## ncol: number of columns (properties/messages) to have
+## include.row.repeats: allow identical entities (default: TRUE)
+## include.col.repeats: allow identical messages/properties (default: TRUE)
+## include.empty: allow messages/properties true of no objects (defaut: TRUE, but this is incompatble with IBR and its variants)
+## include.universal: whether to include columns with all 1s (default: FALSE)
+## include.ineffable: whether to have any all 0s rows (default: FALSE)
+##
+## Value:
+## mats: a list mapping integers to matrices.
+##
+## For example,
+##
+## AllBinaryMatrices(2,2, include.empty=FALSE, include.universal=TRUE)
+##
+## [[1]]
+##    m1 m2
+## t1  1  0
+## t2  0  1
+##
+## [[2]]
+##    m1 m2
+## t1  1  1
+## t2  1  0
+##
+## Notice that
+##
+##    m1 m2
+## t1  0  1
+## t2  1  0
+##
+## is excluded. This is because it is a column permutation variant of [[1]]. Similarly,
+##
+##    m1 m2
+## t1  0  0
+## t2  1  1
+##
+## is excluded because it is a row permutation variant of [[2]].
 
 AllBinaryMatrices = function(nrow, ncol, include.row.repeats=TRUE, include.col.repeats=TRUE, include.empty=TRUE, include.universal=TRUE, include.ineffable=TRUE) {
   total = nrow*ncol
@@ -31,14 +72,13 @@ AllBinaryMatrices = function(nrow, ncol, include.row.repeats=TRUE, include.col.r
     matstr.row = Matrix2CanonicalStr(thismat)
     matstr.col = Matrix2CanonicalStr(t(thismat))
     ## If we've this matrix-type before, in terms of permutations on rows or columns,
-    ## then we register its canonical form for both but we don't do anything
-    ## else:    
-    ##if (!matstr.row %in% row.matlib | matstr.col %in% col.matlib) {
-    ## col.matlib = c(col.matlib, matstr.col)
+    ## then we register its canonical form for both but we don't do anything else:    
+    ##if (!matstr.row %in% row.matlib | !matstr.col %in% col.matlib) {
+    ##  col.matlib = c(col.matlib, matstr.col)
     ## row.matlib = c(row.matlib, matstr.row)
-   ## }
+    ##}
     ## If this is new in terms of permutations on both rows and columns:
-   ## else {
+    ##else {
       ## Add this matrix to the libraries:
       row.matlib = c(row.matlib, matstr.row)
       col.matlib = c(col.matlib, matstr.col)
@@ -90,7 +130,7 @@ AllBinaryMatrices = function(nrow, ncol, include.row.repeats=TRUE, include.col.r
 ## the provided arguments, and Lenght is the number of steps required for
 ## convergence.
 
-ModelLengths = function(nrow, ncol, models=list('IBR'=IBR, 'SurprisalIBR'=SurprisalIBR),
+ModelLengths = function(nrow, ncol, models=c('IBR'),
   include.row.repeats=TRUE, include.col.repeats=TRUE,
   include.universal=TRUE, include.ineffable=TRUE) {
   ## Get all the matrices, as a list:
@@ -116,8 +156,8 @@ ApplyAllModels = function(mat, models) {
   str = paste(t(mat), collapse='')
   ## Output vector of values:
   vals = c(str)  
-  for (modname in names(models)) {
-    model = models[[modname]]
+  for (modname in models) {    
+    model = get(modname)
     seqs = model(mat)
     vals = c(vals, length(seqs))
   }
@@ -128,9 +168,9 @@ ApplyAllModels = function(mat, models) {
 ## Return the maximum length for a given matrix space. The arguments
 ## are the same as those for IbrLengths. The value is a float.
 
-ModelMaxLength = function(nrow, ncol, model=IBR,
+ModelMaxLength = function(nrow, ncol, model='IBR',
   include.row.repeats=TRUE, include.col.repeats=TRUE, include.universal=TRUE, include.ineffable=TRUE) {
-  df = ModelLengths(nrow, ncol, models=c(model),
+  df = ModelLengths(nrow, ncol, models=model,
     include.row.repeats=include.row.repeats,
     include.col.repeats=include.col.repeats,
     include.universal=include.universal,
@@ -142,14 +182,14 @@ ModelMaxLength = function(nrow, ncol, model=IBR,
 ## PLot the distribution of lengths for a given matrix space. The arguments
 ## are the same as those for IbrLengths. A plot window is produced.
 
-ModelLengthPlot = function(nrow, ncol, model=list('IBR'=IBR),
+ModelLengthPlot = function(nrow, ncol, model=model,
   include.row.repeats=TRUE, include.col.repeats=TRUE, include.universal=TRUE, include.ineffable=TRUE) {
-  df = ModelLengths(nrow, ncol, models=c(model),
+  df = ModelLengths(nrow, ncol, models=model,
     include.row.repeats=include.row.repeats,
     include.col.repeats=include.col.repeats,
     include.universal=include.universal,
     include.ineffable=include.ineffable)
-  x = xtabs(~ df[, names(model)])
+  x = xtabs(~ df[, model])
   title = paste(nrow(df), ' (', nrow, ' x ', ncol, ') matrices; include.universal=', include.universal, '; include.ineffable=', include.ineffable, sep='')
   barplot(x, xlab='Length', ylab='Count', main=title, axes=F)
   axis(2, at=as.numeric(x), las=1)

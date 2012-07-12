@@ -179,12 +179,17 @@ SurprisalSpeaker = function(m) {
   ## Inverse column sums give the word interpretations:
   interpret = 1 / apply(m, 2, sum)
   ## Speaker choices:
-  produce = apply(m, 1, function(row){ sum(row * interpret)})
+  produce = apply(m, 1, function(row){ sum(row * interpret) })
   ## Function to apply to each row:
   func = function(row) {
     ## Speaker choices:
     produce = sum(row * interpret)
-    val = (interpret/produce)
+    if (produce > 0) {
+      val = (interpret/produce)
+    }
+    else {
+      val = rep(0, ncol(m))
+    }
     ## Multiply by the binary vector to ensure truth-functionality:
     val = val * row
     return(val)

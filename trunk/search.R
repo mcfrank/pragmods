@@ -182,8 +182,8 @@ ModelLengthPlot = function(nrow, ncol, model='IBR',
     include.empty.rows=include.empty.rows,
     include.univ.rows=include.univ.rows)
   x = xtabs(~ df[, model])
-  title = paste(nrow(df), ' (', nrow, ' x ', ncol, ') matrices;', sep='') ## include.universal=', include.universal, '; include.ineffable=', include.ineffable, sep='')
-  barplot(x, xlab='Length', ylab='Count', main=title, axes=F)
+  title = paste(nrow(df), ' (', nrow, ' x ', ncol, ') matrices; model=', model, sep='')
+  barplot(x, xlab='Length', ylab='Count', main=title, axes=F, cex.main=1)
   axis(2, at=as.numeric(x), las=1)
 }
 

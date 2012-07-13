@@ -235,24 +235,6 @@ GetOneValuedIndices = function(x){
 ##
 ## Value:
 ## a binary vector
-##
-## Note: crucial to use "s" for formatting; "d" fails for large values
-
-## BinaryString2Vector = function(i, length) {
-##   ## Format the binary form of i with 0-padding to length:
-##   fmt = paste("%0", length, "s", sep='')
-##   print(binary(i))
-##   s = sprintf(fmt,  binary(i))
-##   ## Split the binary number into digits:
-##   vals = strsplit(s, '')[[1]]
-##   ## Convert from string to vector:
-##   vals = as.numeric(vals)
-##   ## Return:
-##   return(vals)
-## }
-
-## From http://stackoverflow.com/questions/6614283/converting-decimal-to-binary-in-r.
-binary = function(x){paste(sapply(strsplit(paste(rev(intToBits(x))),""),`[[`,2),collapse="")}
 
 Integer2BinaryVector = function(i, length) {
   ## This produces a string of 1s and 0s of length 32:
@@ -267,6 +249,9 @@ Integer2BinaryVector = function(i, length) {
   ## Return:
   return(vals)
 }
+
+## From http://stackoverflow.com/questions/6614283/converting-decimal-to-binary-in-r.
+binary = function(x){paste(sapply(strsplit(paste(rev(intToBits(x))),""),`[[`,2),collapse="")}
 
 ######################################################################
 ## Map a string s of 1s and 0s to a matrix of dimension nrow. It is
@@ -295,12 +280,15 @@ Str2Matrix = function(s, nrow, row.names=NULL, col.names=NULL) {
   vals = strsplit(s, '')[[1]]
   vals = as.numeric(vals)
   m = matrix(vals, nrow=nrow, byrow=TRUE)
-  if (!is.null(row.names)) {
-    rownames(m) = row.names
+  ## Intuitive row and column names to track changing conditions:
+  if (is.null(row.names)) {
+    row.names = paste('t', seq(1,nrow(m)), sep='')
   }
-  if (!is.null(col.names)) {
-    colnames(m) = col.names
+  if (is.null(col.names)) {
+    col.names = paste('m', seq(1,ncol(m)), sep='')
   }
+  rownames(m) = row.names
+  colnames(m) = col.names  
   return(m)
 }
 
@@ -323,3 +311,21 @@ Matrix2CanonicalStr = function(m) {
   s = paste(s, collapse='')
   return(s)
 }
+
+######################################################################
+## A separating system is one in which each row has a single 1.
+
+IsSeparatingSystem = function(m) {
+  ## Returns TRUE if row contains exactly one 1:
+  seprow = function(row) {sum(row)== 1 & length(row[row > 0]) == 1}
+  ## Apply row-wise:
+  vals = apply(m, 1, seprow)
+  ## Test:
+  if (FALSE %in% vals) {
+    return(FALSE)
+  }
+  else {
+    return(TRUE)
+  }
+}
+  

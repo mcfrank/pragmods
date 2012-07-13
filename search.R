@@ -1,6 +1,7 @@
 library(plyr)
 
 source('ibr.R')
+source('viz.R')
 
 ######################################################################
 ## Generate all binary matrices of a given size.
@@ -66,6 +67,7 @@ AllBinaryMatrices = function(nrow, ncol,
   ## Iterate with a while loop so that R doesn't try to build the
   ## whole 1:matcount vector:
   j = 1
+  print(paste('Matrices to test:', matcount))
   while (j <= matcount) {
     ## Get the nrow x ncol matrix associated with the binary version of j:
     vec = Integer2BinaryVector(j, total)
@@ -145,15 +147,18 @@ ModelLengths = function(nrow, ncol, models='IBR',
     include.univ.cols=include.univ.cols,
     include.empty.rows=include.empty.rows,
     include.univ.rows=include.univ.rows)
-  ## Apply all the models to al the elements of mats:
+  ## Apply all the models to all the elements of mats:
   df = ldply(.data=mats, .fun=ApplyAllModels, models) ##, .progress='text')
-  
-  colnames(df) = c('Matrix', models)
+  ## Add column names; there are three per model: the model
+  ## Length and the two boolean values for separating.
+  modcolnamefunc = function(mod) { paste(mod, c('Depth', 'SpkSep', 'LisSep'), sep='') }
+  modcolnames = unlist(lapply(models, modcolnamefunc))  
+  colnames(df) = c('Matrix', modcolnames)
   ## Add these dimension columns so  that we can recreate the matrices from teh 
   df$Nrow = nrow
   df$Ncol = ncol
   ## More readable column order:
-  df = df[ , c('Matrix', 'Nrow', 'Ncol', models)]  
+  df = df[ , c('Matrix', 'Nrow', 'Ncol', modcolnames)]  
   return(df)
 }
 
@@ -165,13 +170,27 @@ ApplyAllModels = function(mat, models) {
   for (i in 1:length(models)) {    
     model = get(models[i])
     seqs = model(mat)
-    vals = c(vals, length(seqs))
+    ## A separating system is one with a single 1 in each
+    ## row (and in turn all 0s elsewhere on that row).
+    ## If the seqs is even in length, then the final one
+    ## is the listener and the penultimate one is the
+    ## listener:
+    spk.sep = IsSeparatingSystem(seqs[[length(seqs)-1]])
+    lis.sep = IsSeparatingSystem(seqs[[length(seqs)]])
+    ## If seqs is not even in length, then we swap the
+    ## order of the spk.sep and lis.sep
+    if (length(seqs) %% 2 == 1) {
+      temp = spk.sep
+      spk.sep = lis.sep
+      lis.sep = temp
+    }    
+    vals = c(vals, length(seqs), spk.sep, lis.sep)
   }
   return(vals)
 }
 
 ######################################################################
-## PLot the distribution of lengths for a given matrix space. The arguments
+## Plot the distribution of lengths for a given matrix space. The arguments
 ## are the same as those for IbrLengths. A plot window is produced.
 
 ModelLengthPlot = function(nrow, ncol, model='IBR',
@@ -185,11 +204,37 @@ ModelLengthPlot = function(nrow, ncol, model='IBR',
     include.univ.cols=include.univ.cols,
     include.empty.rows=include.empty.rows,
     include.univ.rows=include.univ.rows)
-  x = xtabs(~ df[, model])
+  depthcolname = paste(model, 'Depth', sep='')
+  depths = df[, depthcolname]
+  spks = df[, paste(model, 'SpkSep', sep='')]
+  liss = df[, paste(model, 'LisSep', sep='')]    
+  df$Type = ifelse(spks==T & liss==T, 'fully separating',
+                   ifelse(spks==T & liss==F, 'spk separating',
+                          ifelse(spks==F & liss==T, 'lis. separating',
+                                 'non-separating')))  
+  x = t(xtabs(~ df[, depthcolname] + df$Type))
   title = paste(nrow(df), ' (', nrow, ' x ', ncol, ') matrices; model=', model, sep='')
-  barplot(x, xlab='Length', ylab='Count', main=title, axes=F, cex.main=1)
+  barplot(x, xlab='Depth', ylab='Count', main=title, axes=F, cex.main=1, legend=TRUE)
   axis(2, at=as.numeric(x), las=1)
 }
 
+######################################################################
+## Study a row from a data.frame out ModelLengths()
+##
+## Arguments:
+## row: the data.frame row
+## model: string name for a model to use
+
+StudyModelLengthsRow = function(row, model='IBR') {
+  ## Convert the string representstion to a matrix:  
+  m = Str2Matrix(row$Matrix, row$Nrow)
+  print(m)
+  ## See a corresponding display:
+  MatrixViz(m, print.matrix=TRUE)
+  ## Run the model:
+  model = get(model)
+  seq = model(m)
+  return(seq)
+}
 
 

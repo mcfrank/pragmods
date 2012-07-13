@@ -18,10 +18,16 @@ source('util.R')
 ## rows have been turned into probability distributions
 
 S0 = function(m) {
+  ## Preserve these in case they get lost in processing:
+  row.names = rownames(m)
+  col.names = colnames(m)
   ## Note: apply with 1 as the second argument remaps the
   ## row values, but it also tranposes the matrix. Here,
   ## we use t() to transpose back, for mental hygiene.
   m = t(apply(m, 1, VecNormalize))
+  ## Make sure we still have the row and column names:
+  rownames(m) = row.names
+  colnames(m) = col.names
   return(m)
 }
 
@@ -60,6 +66,9 @@ Sstar = function(m, sem=m, costs=NULL, prior=NULL) {
 
 Speaker = function(m, sem=m, costs=NULL, prior=NULL, argmax=TRUE) {
   m = t(m)
+  ## Preserve these in case they get lost in processing:
+  row.names = rownames(m)
+  col.names = colnames(m)
   ## All 0s cost function if none was supplied:
   if (is.null(costs)) {
     costs = UniformCosts(m)
@@ -74,6 +83,9 @@ Speaker = function(m, sem=m, costs=NULL, prior=NULL, argmax=TRUE) {
   }
   ## Normalize:
   m = t(apply(m, 1, VecNormalize))
+  ## Make sure we still have the row and column names:
+  rownames(m) = row.names
+  colnames(m) = col.names
   return(m)
 }
 
@@ -131,7 +143,10 @@ Lbayes = function(m, sem=m, costs=NULL, prior=UniformDistribution(nrow(m))) {
 
 Listener = function(m, sem, costs=NULL, prior=UniformDistribution(nrow(m)), argmax=TRUE) {  
   ## Transpose:
-  m = t(m)  
+  m = t(m)
+  ## Preserve these in case they get lost in processing:
+  row.names = rownames(m)
+  col.names = colnames(m)  
   ## All 0s cost function if none was supplied:
   if (is.null(costs)) {
     costs = UniformCosts(m)
@@ -157,6 +172,9 @@ Listener = function(m, sem, costs=NULL, prior=UniformDistribution(nrow(m)), argm
   }
   ## Normalize again:
   m = t(apply(m, 1, VecNormalize))
+  ## Make sure we stil have the row and column names:
+  rownames(m) = row.names
+  colnames(m) = col.names
   return(m)
 }
 

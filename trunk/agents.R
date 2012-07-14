@@ -216,3 +216,20 @@ SurprisalSpeaker = function(m) {
   return(m)    
 }
 
+######################################################################
+## Separate implementation of the Frank-Goodman model, which is
+## equivalent to Lbayes(SurprisalSpeaker(mat)).
+
+FG = function(m, prior=UniformDistribution(nrow(m))) {
+  ## Get the model posterior:
+  m = SurprisalSpeaker(m)
+  ## Incorporate the prior and transpose:
+  m = t(m * prior)
+  ## Normalize:
+  m = t(apply(m, 1, function(row){row/sum(row)}))
+  ## Return the tranpose to match with the IBR norms:
+  return(m)
+}
+  
+
+  

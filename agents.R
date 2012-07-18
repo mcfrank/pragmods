@@ -32,21 +32,36 @@ S0 = function(m) {
 }
 
 ##################################################
-## The standard IBR speaker: max on the rows and renormalize. The
-## hard work is done by the function Speaker.
+## A speaker who
+## 
+## * incorporates no prior. (prior is a keyword
+## argument to ensure compatibility with the other
+## functions; if a value is supplied, it is NOT
+## passed to Speaker
 ##
-## Arguments:
-## m: a 2d matrix
-## sem: the underlying semantic matrix (not used, but given as an argument
-## so that this function as the same signature as the Listner ones (default: m)
-## costs: a matrix with the same dimension as m giving the costs (default: no costs)
-## prior: not used; here only to ensure that Speaker and Listener functions have the same signature
+## * does not argmax
 ##
-## Value
-## A matrix with the same dimensions as m.
+## For additional details on the arguments, see Speaker
+
+S = function(m, sem=m, costs=NULL, prior=NULL) {
+  m = Speaker(m, sem=sem, costs=costs, prior=NULL, argmax=FALSE)
+  return(m)
+}
+
+##################################################
+## A speaker who
+## 
+## * incorporates no prior. (prior is a keyword
+## argument to ensure compatibility with the other
+## functions; if a value is supplied, it is NOT
+## passed to Speaker
+##
+## * does argmax
+##
+## For additional details on the arguments, see Speaker
 
 Sstar = function(m, sem=m, costs=NULL, prior=NULL) {
-  m = Speaker(m, sem=sem, costs=costs, argmax=TRUE, prior=prior)
+  m = Speaker(m, sem=sem, costs=costs, prior=NULL, argmax=TRUE)
   return(m)    
 }
 
@@ -93,38 +108,61 @@ Speaker = function(m, sem=m, costs=NULL, prior=NULL, argmax=TRUE) {
 ## LISTENERS
 
 ##################################################
-## A standard IBR listener: impose costs and
-## maximize on rows.
+## A speaker who
+## 
+## * incorporates no prior. (prior is a keyword
+## argument to ensure compatibility with the other
+## functions; if a value is supplied, it is NOT
+## passed to Listener)
 ##
-## Arguments:
-## m: a 2d matrix
-## sem: the underlying semantic matrix, required for cases where a surprise row is encountered
-## costs: a matrix with the same dimension as m giving the costs (default: no costs)
-## prior: the prior over states (defailt: even prior)
+## * does not argmax
 ##
-## Value:
-## A matrix with the same dimensions as m.
+## For additional details on the arguments, see Listener
 
-Lstar = function(m, sem, costs=NULL, prior=UniformDistribution(nrow(m))) {
-  m = Listener(m, sem, costs=costs, prior=prior, argmax=TRUE)
+L = function(m, sem, costs=NULL, prior=NULL) {
+  m = Listener(m, sem, costs=costs, prior=NULL, argmax=FALSE)
   return(m)
 }
 
 ##################################################
-## A bayesian IBR listener: impose costs, include
-## priors, and do not maximize on rows.
+## A speaker who
+## 
+## * incorporates a prior (default is uniform)
+## * does not argmax
 ##
-## Arguments:
-## m: a 2d matrix
-## sem: the underlying semantic matrix, required for cases where a surprise row is encountered
-## costs: a matrix with the same dimension as m giving the costs (default: no costs)
-## prior: the prior to impose over worlds (columns in m; default: an even prior)
-##
-## Value:
-## A matrix with the same dimensions as m.
+## For additional details on the arguments, see Listener
 
-Lbayes = function(m, sem=m, costs=NULL, prior=UniformDistribution(nrow(m))) {
+Lbayes = function(m, sem, costs=NULL, prior=UniformDistribution(nrow(m))) {
   m = Listener(m, sem, costs=costs, prior=prior, argmax=FALSE)
+  return(m)
+} 
+
+##################################################
+## A speaker who
+## 
+## * incorporates no prior. (prior is a keyword
+## argument to ensure compatibility with the other
+## functions; if a value is supplied, it is NOT
+## passed to Listener)
+## * does argmax
+##
+## For additional details on the arguments, see Listener
+
+Lstar = function(m, sem, costs=NULL, prior=NULL) {
+  m = Listener(m, sem, costs=costs, prior=UniformDistribution(nrow(m)), argmax=TRUE)
+  return(m)
+} 
+
+##################################################
+## A speaker who
+## 
+## * incorporates a prior (default is uniform)
+## * does argmax
+##
+## For additional details on the arguments, see Listener.
+
+Lstarbayes = function(m, sem, costs=NULL, prior=UniformDistribution(nrow(m))) {
+  m = Listener(m, sem, costs=costs, prior=prior, argmax=TRUE)
   return(m)
 }
 

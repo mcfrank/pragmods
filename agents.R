@@ -120,7 +120,7 @@ Speaker = function(m, sem=m, costs=NULL, prior=NULL, argmax=TRUE) {
 ## For additional details on the arguments, see Listener
 
 L = function(m, sem, costs=NULL, prior=NULL) {
-  m = Listener(m, sem, costs=costs, prior=NULL, argmax=FALSE)
+  m = Listener(m, sem, costs=costs, prior=UniformDistribution(nrow(m)), argmax=FALSE)
   return(m)
 }
 

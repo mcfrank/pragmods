@@ -134,7 +134,7 @@ AllBinaryMatrices = function(nrow, ncol,
 ## the provided arguments, and Lenght is the number of steps required for
 ## convergence.
 
-ModelLengths = function(nrow, ncol, models='IBR',
+ModelDepths = function(nrow, ncol, models='IBR',
   include.permutation.variants=FALSE,
   include.row.repeats=TRUE, include.col.repeats=TRUE,
   include.univ.cols=TRUE,
@@ -191,9 +191,9 @@ ApplyAllModels = function(mat, models) {
 
 ######################################################################
 ## Plot the distribution of lengths for a given matrix space. The arguments
-## are the same as those for IbrLengths. A plot window is produced.
+## are the same as those for ModelDepths. A plot window is produced.
 
-ModelLengthPlot = function(nrow, ncol, model='IBR',
+ModelDepthPlot = function(nrow, ncol, model='IBR',
   include.permutation.variants=FALSE,
   include.row.repeats=TRUE, include.col.repeats=TRUE,
   include.univ.cols=TRUE,
@@ -219,13 +219,13 @@ ModelLengthPlot = function(nrow, ncol, model='IBR',
 }
 
 ######################################################################
-## Study a row from a data.frame out ModelLengths()
+## Study a row from a data.frame out ModelDepths.
 ##
 ## Arguments:
 ## row: the data.frame row
 ## model: string name for a model to use
 
-StudyModelLengthsRow = function(row, model='IBR') {
+StudyModelDepthsRow = function(row, model='IBR') {
   ## Convert the string representstion to a matrix:  
   m = Str2Matrix(row$Matrix, row$Nrow)
   print(m)

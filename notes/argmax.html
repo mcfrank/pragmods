@@ -11,7 +11,17 @@
 
 <h1>On whether to argmax</h1>
 
-<p>Chris Potts, 2012-07-18</p>
+<p>Chris Potts, 2012-07-19</p>
+
+<ol class="toc">
+  <li><a href="#overview">Overview</a></li>
+  <li><a href="#mats">Relevant matrices</a></li>
+  <li><a href="#ibr">Standard IBR output</a></li>
+  <li><a href="#surprisal">Surprisal IBR output</a></li>
+  <li><a href="#softmax">IBR without argmax</a></li>
+  <li><a href="#sursoft">SurprisalIBR without argmax</a></li>
+  <li><a href="#fg">The Frank&ndash;Goodman speaker</a></li>
+</ol>
 
 <h2><a id="overview">Overview</a></h2>
 
@@ -149,14 +159,14 @@
 </ol>
 
 
-<h2><a id="sursoft">SurprisalIBR without argmax</a></h2>
+<h2><a id="sursoft">Surprisal IBR without argmax</a></h2>
 
 <p>The output here is the same as the output for <span class="rcode">IBR</span> with <span class="rcode">argmax=FALSE</span>.</p>
 
 
 <h2><a id="fg">The Frank&ndash;Goodman speaker</a></h2>
 
-<p>There are three equivalent ways of specifying the Frank&dash;Goodman model using our code:</p>
+<p>There are three equivalent ways of specifying the Frank&ndash;Goodman model using our code:</p>
 
 <ol>
   <li><span class="rcode">FG(m1)</span></li>

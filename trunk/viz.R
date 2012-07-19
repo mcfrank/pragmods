@@ -45,6 +45,7 @@ MatrixViz = function(m, print.matrix=FALSE) {
 ## vals[1]: add a hat
 ## vals[2]: add glasses
 ## vals[3]: add a mustache
+## vals[4]: add hair
 
 Smiley = function(vals=c(0,0,0,0)) {
   ## Basic locating parameters:
@@ -115,7 +116,7 @@ Smiley = function(vals=c(0,0,0,0)) {
     ## Use the same eye parameters as above for the frames/lenses:
     symbols(eye.xvals, eye.yvals, circles=c(0.2, 0.2), fg=glasses.col, bg=glasses.col, inches=F, add=TRUE)
   }
-  ## Goatee (currently somewhat random in appearance due to use of jitter; we might want to fix it):
+  ## Mustache (currently somewhat random in appearance due to use of jitter; we might want to fix it):
   if (mustache == 1) {
     gx = rep(xval, 500)
     gy = rep(yval-0.45, 500)   

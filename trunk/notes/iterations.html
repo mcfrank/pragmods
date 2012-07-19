@@ -11,15 +11,21 @@
 
 <h1>Finding natural iteration examples</h1>
 
+<ol class="toc">
+  <li><a href="#overview">Overview</a></li>
+  <li><a href="#fourfour">The space of (4 &times; 4) matrices</a></li>
+  <li><a href="#others">Other matrix spaces</a></li>
+</ol>
+  
 <h2><a id="overview">Overview</a></h2>
 
-<p>We have a hunch that the power of IBR to iterate to arbitary depths is not a strength of the model, but rather a weakness, an embarrassment of riches, because itertion depth is bounded so low as to hardly warrant the label &quot;iteration&quot;.</p>
+<p>We have a hunch that the power of IBR to iterate to arbitrary depths is not a strength of the model, but rather a weakness, an embarrassment of riches, because iteration depth is bounded so low as to hardly warrant the label &quot;iteration&quot;.</p>
 
-<p>To show, this we want to put people in a scenario in which the IBR eaily converges on a separating system but people fail to do that.  It seems that any separating system in the space of (4 &times; 4) matrices will do.</p>
+<p>To show, this we want to put people in a scenario in which the IBR easily converges on a separating system but people fail to do that.  It seems that any separating system in the space of (4 &times; 4) matrices will do.</p>
 
 <p>However, we probably also want to show what it takes for people to find the separating systems. The idea here is that if people are allowed to literally iterate, fixing meanings as they go, then they will find the right system.  Thus, the ideal system for our experiment would be one where the iteration neatly progressed through the messages, fixing their meanings one-by-one.</p>
 
-<p>More precisely, call a vector with a single 1 and 0s otherwise a &quot;one-hot&quot; vector. Then our ideal matrix ``m'' would be such that ``IBR(m)'' contained a sub-sequence of listener matrices ``m1 ... m4'' such that ``m1'' has a single one-hot row, ``m2'' has two one-hot rows, ``m3'' has two one-hot rows, and ``m4'' has four one-hot rows.</p>
+<p>More precisely, call a vector with a single 1 and 0s otherwise a &quot;one-hot&quot; vector. Then our ideal matrix <span class="rcode">m</span> would be such that <span class="rcode">IBR(m)</span> contained a sub-sequence of listener matrices <span class="rcode">m1 ... m4</span> such that <span class="rcode">m1</span> has a single one-hot row, <span class="rcode">m2</span> has two one-hot rows, <span class="rcode">m3</span> has two one-hot rows, and <span class="rcode">m4</span> has four one-hot rows.</p>
 
 <p><strong>Summary of findings</strong>: the best we can do is use (4 &times; 4) matrices in which (i) the progression of one-hot counts is &lt;1,3,4&gt;, and (ii) surprise signals are never an issue (the progression is monotonic and involves no odd disruptions to).</p>
 
@@ -104,7 +110,7 @@
 <p>I explored some other matrix spaces. Here is a summary of what I found:</p>
 
 <ul>
-  <li>(m &times; n) matrices for m &lt; 4 or n &lt; 4: these don't distinguish ``IBR'' from ``FG'' in terms of iteration depth</li>
+  <li>(m &times; n) matrices for m &lt; 4 or n &lt; 4: these don't distinguish <span class="rcode">IBR</span> from <span class="rcode">FG</span> in terms of iteration depth</li>
   <li>(4 &times; 5) matrices: these have one-hot progressions &lt;1,3,5&gt; and &lt;2,4,5&gt; and &lt;1,3,4&gt;, but none that proceed without gaps.</li>
   <li>(5 &times; 4) matrices: because there are more referents than messages, the non-trivial systems are never fully separating</li>
 </ul>

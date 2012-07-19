@@ -83,7 +83,7 @@ FindProgressions = function(nrow, ncol) {
         vals = c(vals, MessageConvergenceCount(m))
       }
     }
-    if (length(vals) >= (2)) {
+    if (length(vals) >= (ncol-1)) {
       print("======================================================================")
       print(mat)
       print(paste('Convergences', paste(vals, collapse=', ')))

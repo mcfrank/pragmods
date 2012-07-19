@@ -315,11 +315,14 @@ Matrix2CanonicalStr = function(m) {
 ######################################################################
 ## A separating system is one in which each row has a single 1.
 
-IsSeparatingSystem = function(m) {
-  ## Returns TRUE if row contains exactly one 1:
-  seprow = function(row) {sum(row)== 1 & length(row[row > 0]) == 1}
+## Returns TRUE if row contains exactly one 1, else FALSE:
+OneHotVector = function(vec) {
+  return(sum(vec) == 1 & length(vec[vec > 0]) == 1)
+}
+
+IsSeparatingSystem = function(m) { 
   ## Apply row-wise:
-  vals = apply(m, 1, seprow)
+  vals = apply(m, 1, OneHotVector)
   ## Test:
   if (FALSE %in% vals) {
     return(FALSE)

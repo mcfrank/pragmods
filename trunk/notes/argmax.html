@@ -13,7 +13,7 @@
 
 <p>Chris Potts, 2012-07-18</p>
 
-<h2><a id="mats">Overview</a></h2>
+<h2><a id="overview">Overview</a></h2>
 
 <p>This page presents two 3 &times; 3 matrices that highlight the differences between taking argmax, as in standard IBR, and not taking it. High-level summary:</p>
 
@@ -41,7 +41,7 @@
 <li class="rout">r3   1       0        1</li>
 <li>&nbsp;</li>
 <li>MatrixViz(m1, print.matrix=T)</li>
-<li><img src="argmax-m1.png" alt="Depiction of m1" width="900" height="225" /></li>
+<li><img src="figures/argmax-m1.png" alt="Depiction of m1" width="900" height="225" /></li>
 </ol>
 
 
@@ -56,7 +56,7 @@
 <li>r3   1       0        1</li>
 <li>&nbsp;</li>
 <li>MatrixViz(m2, print.matrix=T)</li>
-<li><img src="argmax-m2.png" alt="Depiction of m2" width="900" height="225" /></li>
+<li><img src="figures/argmax-m2.png" alt="Depiction of m2" width="900" height="225" /></li>
 </ol>
 
 <p>These are not really different conceptually. In both, all three rows have exactly two 1s on them.  Two of the rows are the same, and the third is different.</p>
@@ -75,10 +75,10 @@
 <li class="rout">r3 0.5     0.0      0.5</li>
 <li class="rout">&nbsp;</li>
 <li class="rout">[[2]] <span class="cmt">## Listener</span></li>
-<li class="rout">                r1        r2        r3</li>
-<li class="rout">hat      0.0000000 0.5000000 0.5000000</li>
-<li class="rout">glasses  1.0000000 0.0000000 0.0000000</li>
-<li class="rout">mustache 0.3333333 0.3333333 0.3333333</li>
+<li class="rout">           r1   r2   r3</li>
+<li class="rout">hat      0.00 0.50 0.50</li>
+<li class="rout">glasses  1.00 0.00 0.00</li>
+<li class="rout">mustache 0.33 0.33 0.33</li>
 <li class="rout">&nbsp;</li>
 <li class="rout">[[3]] <span class="cmt">## Speaker</span></li>
 <li class="rout">   hat glasses mustache</li>
@@ -167,10 +167,10 @@
 <p>The output tends in the direction of <span class="rcode">SurprisalIBR</span> and the <span class="rcode">argmax=FALSE</span> models:</p>
 
 <ol class="rcode">
-<li class="rout">r1        r2        r3</li>
-<li class="rout">hat      0.0000000 0.5000000 0.5000000</li>
-<li class="rout">glasses  1.0000000 0.0000000 0.0000000</li>
-<li class="rout">mustache 0.2380952 0.3809524 0.3809524</li>
+<li class="rout">           r1   r2   r3</li>
+<li class="rout">hat      0.00 0.50 0.50</li>
+<li class="rout">glasses  1.00 0.00 0.00</li>
+<li class="rout">mustache 0.24 0.38 0.38</li>
 </ol>
 
 <p>If <span class="rcode">FG</span> were allowed to iterate with <span class="rcode">Lbayes</span> and <span class="rcode">S</span>, it would end up like <span class="rcode">IBR(m1, argmax=FALSE)</span>.</p>

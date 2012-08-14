@@ -7,7 +7,7 @@ library(png)
 ## Visualize a matrix (any number of rows; at most three columns)
 ## in terms of smiley faces based on pictures.
 
-ImageViz = function(m, print.matrix=FALSE) {
+ImageViz = function(m, print.matrix=FALSE, stim="face") {
   ## Error checking:
   if (ncol(m) > 4) {
     stop(paste("Apologies: I can't handle more than 4 columns/properties"))
@@ -24,7 +24,7 @@ ImageViz = function(m, print.matrix=FALSE) {
   dev.new(width=plot.width, height=plot.height)
   par(mfrow=c(1,panels), oma=c(0,0,0,0), mar=c(0,0,0,0))
   for (i in 1:nrow(m)) {
-    SmileyImg(m[i, ])
+    StimImg(m[i, ],stim)
   }
   ## Add a final column for the matrix if requested:
   if (print.matrix) {
@@ -37,16 +37,12 @@ ImageViz = function(m, print.matrix=FALSE) {
 }
 
 ######################################################################
-## Generate smiley images based on a set of binary values:
+## Generate stimulus images based on a set of binary values:
 ##
-## vals: a binary vector of length 0-3. For each coordinate, 0 means
+## vals: a binary vector of length 0-4. For each coordinate, 0 means
 ## absence of the property, and 1 means presence.
-##
-## vals[1]: add a hat
-## vals[2]: add glasses
-## vals[3]: add a mustache
 
-SmileyImg = function(vals=c(0,0,0,0)) {			
+StimImg = function(vals=c(0,0,0,0), stim="face") {			
   ## Basic locating parameters:
   xval = 0
   yval = 0
@@ -60,7 +56,19 @@ SmileyImg = function(vals=c(0,0,0,0)) {
   }
   
   ## load features
-  feature.names <- c("tie","hat","mustache","glasses")
+  if (stim == "face") {
+  	base <- readPNG("stim/face.png")
+  	feature.names <- c("tie","hat","mustache","glasses")
+  } else if  (stim=="snowman") {
+  	base <- readPNG("stim/snowman.png")
+  	feature.names <- c("beanie","gloves","scarf","belt")
+  } else if (stim == "sundae") {
+  	base <- readPNG("stim/sundae.png")
+  	feature.names <- c("banana","cherry","cream","chocolate")
+  } else {
+  	stop("no stim of that name")
+  }  
+
   features <- list()
   
   for (i in 1:length(feature.names)) {
@@ -69,7 +77,6 @@ SmileyImg = function(vals=c(0,0,0,0)) {
   
   ## Start an empty plot window with the right dimensions:
   plot(xlim, ylim, type='n', xlab='', ylab='', axes=F)  
-  base <- readPNG("stim/face.png")
   rasterImage(base,1,1,2,2)
   
   for (i in 1:length(vals)) {

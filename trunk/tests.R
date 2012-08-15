@@ -24,8 +24,17 @@ stiller.scales = matrix(
     c('r1', 'r2', 'r3'), # Row names; referents.
     c('hat', 'glasses', 'mustache'))) # Column names; messages.
 
-## Stiller no-scales, but with the ballcap left null:
+## Stiller no-scales
 stiller.noscales = matrix(
+  c(0,   0,   1,  1,
+    0,   1,   1,  0,
+    1,   1,   0,  0), byrow=T, nrow=3,
+  dimname=list(
+    c('r1', 'r2', 'r3'), # Row names; referents.
+    c('hat', 'glasses', 'mustache','tie'))) # Column names; messages.
+
+## Stiller no-scales, but with the ballcap left null:
+stiller.noscales.null = matrix(
   c(0,   0,   1,
     0,   1,   1,
     1,   1,   0), byrow=T, nrow=3,

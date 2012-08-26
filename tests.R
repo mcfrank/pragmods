@@ -17,12 +17,12 @@ scalars = matrix(
 
 ## Stiller scales
 stiller.scales = matrix(
-  c(0,   0,   0,
-    0,   1,   0,
-    1,   1,   0), byrow=T, nrow=3,
+  c(0,   0,
+    0,   1,
+    1,   1), byrow=T, nrow=3,
   dimname=list(
     c('r1', 'r2', 'r3'), # Row names; referents.
-    c('hat', 'glasses', 'mustache'))) # Column names; messages.
+    c('hat', 'glasses'))) # Column names; messages.
 
 ## Stiller no-scales
 stiller.noscales = matrix(
@@ -124,7 +124,7 @@ Matrix7 = function() {
   print("======================================================================")
   print('4 x 4 matrix requiring 7 iterations in IBR')
   print(IBR(m7))
-  MatrixViz(m7, print.matrix=TRUE)
+  ImageViz(m7, print.matrix=TRUE)
 }
 
 ## All demos:

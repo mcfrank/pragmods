@@ -21,7 +21,7 @@ ImageViz = function(m, print.matrix=FALSE, stim="face") {
     panels = panels + 1
   }
   ## Plot the smileys:
-  dev.new(width=plot.width, height=plot.height)
+#   dev.new(width=plot.width, height=plot.height)
   par(mfrow=c(1,panels), oma=c(0,0,0,0), mar=c(0,0,0,0))
   for (i in 1:nrow(m)) {
     StimImg(m[i, ],stim)
@@ -58,13 +58,13 @@ StimImg = function(vals=c(0,0,0,0), stim="face") {
   ## load features
   if (stim == "face") {
   	base <- readPNG("stim/face.png")
-  	feature.names <- c("tie","hat","mustache","glasses")
+  	feature.names <- c("hat","glasses","mustache","tie")
   } else if  (stim=="snowman") {
   	base <- readPNG("stim/snowman.png")
-  	feature.names <- c("beanie","gloves","scarf","belt")
+  	feature.names <- c("beanie","scarf","gloves","belt")
   } else if (stim == "sundae") {
   	base <- readPNG("stim/sundae.png")
-  	feature.names <- c("banana","cherry","cream","chocolate")
+  	feature.names <- c("cherry","cream","chocolate","banana")
   } else {
   	stop("no stim of that name")
   }  

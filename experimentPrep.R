@@ -66,34 +66,31 @@ ViewMaxModelDepth = function(nrow, ncol, model='IBR') {
   }
 }
 
-MessageConvergenceCount = function(m) {
-  vals = apply(m, 1, OneHotVector)
-  conv = length(vals[vals == TRUE])
-  return(conv)
-}
 
-FindProgressions = function(nrow, ncol) {
-  mats = AllBinaryMatrices(nrow, ncol, include.empty.cols=FALSE)
-  count = 0
-  for (mat in mats) {
-    seq = IBR(mat)
-    vals = c()
-    for (m in seq) {
-      if (!SpeakerMatrix(m, seq)) {
-        vals = c(vals, MessageConvergenceCount(m))
-      }
-    }
-    if (length(vals) >= (ncol-1)) {
-      print("======================================================================")
-      print(mat)
-      print(paste('Convergences', paste(vals, collapse=', ')))
-      print(paste('Depth of system', length(seq)))
-      count = count + 1
-    }
-  }
-  print(paste("total matrices found:", count))
-}
-    
 
+# FindProgressions = function(nrow, ncol) {
+#   mats = AllBinaryMatrices(nrow, ncol, include.empty.cols=FALSE)
+#   count = 0
+#   for (mat in mats) {
+#     seq = IBR(mat)
+#     vals = c()
+#     for (m in seq) {
+#       if (!SpeakerMatrix(m, seq)) {
+#         vals = c(vals, MessageConvergenceCount(m))
+#       }
+#     }
+#     if (length(vals) >= (ncol-1)) {
+#       print("======================================================================")
+#       print(mat)
+#       print(paste('Convergences', paste(vals, collapse=', ')))
+#       print(paste('Depth of system', length(seq)))
+#       count = count + 1
+#     }
+#   }
+#   print(paste("total matrices found:", count))
+# }
+#     
+
+#### 
   
 

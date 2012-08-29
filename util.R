@@ -21,6 +21,18 @@ VecNormalize = function(row){
 }
 
 ######################################################################
+## Turn a matrix into a row-wise probability distribution
+##
+## Argument:
+## a numeric matrix
+## Value:
+## a numeric matrix of the same size as the input.
+
+Rownorm = function(m, normalizer=VecNormalize) {
+  t(apply(m, 1, normalizer))
+}
+
+######################################################################
 ## Identify the max element in a row and zero out all non-maximal ones
 ##
 ## Argument:

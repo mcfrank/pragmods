@@ -269,5 +269,6 @@ FG = function(m, prior=UniformDistribution(nrow(m))) {
   return(m)
 }
   
+######################################################################
+## Assorted wrappers of agents for simulation
 
-  

@@ -1,7 +1,7 @@
-## analysis of Experiment 1
+## analysis of Experiment 0
 # matrix is 
-# 0 0 1
-# 0 1 1
+# 0 0 0
+# 0 1 0
 # 1 1 0
 library(reshape)
 library(plyr)

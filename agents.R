@@ -272,3 +272,15 @@ FG = function(m, prior=UniformDistribution(nrow(m))) {
 ######################################################################
 ## Assorted wrappers of agents for simulation
 
+L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
+  Lbayes(S0(m),m,prior=prior)
+}
+
+L_S_L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
+  Lbayes(S(Lbayes(S0(m),m,prior=prior),m),m,prior=prior)
+}
+
+L_S_L_S_L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
+  Lbayes(S(Lbayes(S(Lbayes(S0(m),m,prior=prior),m),m,prior=prior),m),m,prior=prior)
+}
+

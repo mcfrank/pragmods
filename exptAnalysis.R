@@ -47,21 +47,10 @@ salience <- subset(agg.data,condition=="salience")
 
 es <- read.csv("data/experiment_conditions.csv")
 
+# note I added these to agents.R
 models <- c("L_S0","FG","L_S_L_S_L_S0")
 
-L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
-  Lbayes(S0(m),m,prior=prior)
-}
-
-L_S_L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
-  Lbayes(S(Lbayes(S0(m),m,prior=prior),m),m,prior=prior)
-}
-
-L_S_L_S_L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
-  Lbayes(S(Lbayes(S(Lbayes(S0(m),m,prior=prior),m),m,prior=prior),m),m,prior=prior)
-}
-
-
+# big loop to run models on various datapoints of various experiments
 preds <- data.frame()
 for (b in 0:1) {
   for (m in 1:length(models)) {
@@ -106,7 +95,11 @@ for (b in 0:1) {
 }
 ########################################################
 #### VISUALIZE RESULTS VS. PREDICTIONS ###
-#legend.justification=c(1,0),#legend.position=c(1,0),
+
+# merge dataset
+all.data <- merge(preds,listener,by.x=c("expt","level"),by.y=c("exp","level"))
+
+# lots of ggplot madness
 plot.style <- opts(panel.grid.major = theme_blank(), panel.grid.minor = theme_blank(),
                    axis.line = theme_segment(colour="black",size=.5),
                    axis.ticks = theme_segment(size=.5),
@@ -114,10 +107,11 @@ plot.style <- opts(panel.grid.major = theme_blank(), panel.grid.minor = theme_bl
                    axis.title.y = theme_text(angle=90,vjust=0.25),
                    panel.margin = unit(1.5,"lines"))
 
-all.data <- merge(preds,listener,by.x=c("expt","level"),by.y=c("expt","level"))
 
 all.data$model2 <- factor(all.data$model,levels=models)
 all.data$level2 <- factor(all.data$level)
+
+# actually plot, plus more ggplot madness
 q <- qplot(target.pred,target,ymin=target-target.cil,ymax=target+target.cih,data=all.data,
       colour=expt,geom="pointrange",shape=level2,
       xlim=c(0,1),ylim=c(0,1),xlab="Model prediction",ylab="Experimental data") + 

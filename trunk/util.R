@@ -194,6 +194,23 @@ ZerosVector2UniformDistibution = function(row) {
 }
 
 ######################################################################
+## If the numeric vector argument row contains only 0s, map it to zeros.
+##
+## Argument:
+## row: a numeric vector
+## Value:
+## a numeric vector of the same length as row
+
+ZerosVector2ZerosVector = function(row) {
+  if (ZerosVector(row)) {
+    return(rep(0, length(row)))
+  }
+  else {
+    return(row)
+  }
+}
+
+######################################################################
 ## Create a uniform distribution of length n:
 ##
 ## Argument:

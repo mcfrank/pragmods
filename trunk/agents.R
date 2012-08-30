@@ -43,8 +43,8 @@ S0 = function(m) {
 ##
 ## For additional details on the arguments, see Speaker
 
-S = function(m, sem=m, costs=NULL, prior=NULL) {
-  m = Speaker(m, sem=sem, costs=costs, prior=NULL, argmax=FALSE)
+S = function(m, sem=m, costs=NULL, prior=NULL, resort.to.uniform=TRUE) {
+  m = Speaker(m, sem=sem, costs=costs, prior=NULL, argmax=FALSE, resort.to.uniform=resort.to.uniform)
   return(m)
 }
 
@@ -60,8 +60,8 @@ S = function(m, sem=m, costs=NULL, prior=NULL) {
 ##
 ## For additional details on the arguments, see Speaker
 
-Sstar = function(m, sem=m, costs=NULL, prior=NULL) {
-  m = Speaker(m, sem=sem, costs=costs, prior=NULL, argmax=TRUE)
+Sstar = function(m, sem=m, costs=NULL, prior=NULL, resort.to.uniform=TRUE) {
+  m = Speaker(m, sem=sem, costs=costs, prior=NULL, argmax=TRUE, resort.to.uniform=resort.to.uniform)
   return(m)    
 }
 
@@ -79,7 +79,7 @@ Sstar = function(m, sem=m, costs=NULL, prior=NULL) {
 ## Value
 ## A matrix with the same dimensions as m.
 
-Speaker = function(m, sem=m, costs=NULL, prior=NULL, argmax=TRUE) {
+Speaker = function(m, sem=m, costs=NULL, prior=NULL, argmax=TRUE, resort.to.uniform=TRUE) {
   m = t(m)
   ## Preserve these in case they get lost in processing:
   row.names = rownames(m)
@@ -88,8 +88,15 @@ Speaker = function(m, sem=m, costs=NULL, prior=NULL, argmax=TRUE) {
   if (is.null(costs)) {
     costs = UniformCosts(m)
   }
+  
   ## Replace any all-0 rows with uniform distributions:
-  m = t(apply(m, 1, ZerosVector2UniformDistibution))
+  if (resort.to.uniform) {
+    m = t(apply(m, 1, ZerosVector2UniformDistibution))
+  } 
+  else {
+    m = t(apply(m, 1, ZerosVector2ZerosVector))
+  }    
+    
   ## Subtract costs:
   m = m - costs
   ## Maximize if requested:
@@ -271,16 +278,37 @@ FG = function(m, prior=UniformDistribution(nrow(m))) {
   
 ######################################################################
 ## Assorted wrappers of agents for simulation
+##
+## Note that resort.to.uniform = FALSE allows for null rows in Experiment 0
 
 L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
-  Lbayes(S0(m),m,prior=prior)
+  Lbayes(S0(m),
+         m,prior=prior)
 }
 
 L_S_L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
-  Lbayes(S(Lbayes(S0(m),m,prior=prior),m),m,prior=prior)
+  Lbayes(S(Lbayes(S0(m),
+                  m,prior=prior),
+           m,resort.to.uniform=FALSE),
+         m,prior=prior)
 }
 
 L_S_L_S_L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
-  Lbayes(S(Lbayes(S(Lbayes(S0(m),m,prior=prior),m),m,prior=prior),m),m,prior=prior)
+  Lbayes(S(Lbayes(S(Lbayes(S0(m),
+                           m,prior=prior),
+                    m,resort.to.uniform=FALSE),
+                  m,prior=prior),
+           m,resort.to.uniform=FALSE),
+         m,prior=prior)
 }
 
+L_S_L_S_L_S_L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
+  Lbayes(S(Lbayes(S(Lbayes(S(Lbayes(S0(m),
+                                    m,prior=prior),
+                             m,resort.to.uniform=FALSE),
+                           m,prior=prior),
+                    m,resort.to.uniform=FALSE),
+                  m,prior=prior),
+           m,resort.to.uniform=FALSE),  
+           m,prior=prior)
+}

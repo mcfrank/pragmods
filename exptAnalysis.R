@@ -48,7 +48,7 @@ salience <- subset(agg.data,condition=="salience")
 es <- read.csv("data/experiment_conditions.csv")
 
 # note I added these to agents.R
-models <- c("L_S0","FG","L_S_L_S_L_S0")
+models <- c("L_S0","FG","L_S_L_S_L_S0","L_S_L_S_L_S_L_S0")
 
 # big loop to run models on various datapoints of various experiments
 preds <- data.frame()
@@ -109,16 +109,16 @@ plot.style <- opts(panel.grid.major = theme_blank(), panel.grid.minor = theme_bl
                    panel.margin = unit(1.5,"lines"))
 
 
-all.data$model2 <- factor(all.data$model,levels=models)
-all.data$level2 <- factor(all.data$level)
+all.data$model <- factor(all.data$model,levels=models)
+all.data$level <- factor(all.data$level)
 
 # actually plot, plus more ggplot madness
 quartz()
 q <- qplot(target.pred,target,ymin=target-target.cil,ymax=target+target.cih,
-           data=all.data,colour=expt,geom="pointrange",shape=level2,
+           data=all.data,colour=expt,geom="pointrange",shape=level,
            xlim=c(0,1),ylim=c(0,1),xlab="Model prediction",ylab="Experimental data") + 
              geom_abline(intercept=0,slope=1,lty=2) + 
-             facet_grid(bayesian~model2) +
+             facet_grid(bayesian~model) +
              scale_colour_manual(name="Experiment",values=c("red","blue","green")) + 
              scale_shape_manual(name="Inference level",values=c(15,16,17)) +              
         theme_bw() + 

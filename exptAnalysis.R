@@ -113,9 +113,6 @@ all.data$model2 <- factor(all.data$model,levels=models)
 all.data$level2 <- factor(all.data$level)
 
 # actually plot, plus more ggplot madness
-corr = function(x){round(cor.test(x$target.pred,x$target)$estimate,3)}
-corrs <- ddply(all.data, .(model,bayesian), "corr")
-
 quartz()
 q <- qplot(target.pred,target,ymin=target-target.cil,ymax=target+target.cih,
            data=all.data,colour=expt,geom="pointrange",shape=level2,
@@ -133,4 +130,9 @@ q <- qplot(target.pred,target,ymin=target-target.cil,ymax=target+target.cih,
 gt <- ggplot_gtable(ggplot_build(q))
 gt$layout$clip[gt$layout$name=="panel"] <- "off"
 grid.draw(gt)
+
+# some stats for comparison
+corr = function(x){round(cor.test(x$target.pred,x$target)$estimate,3)}
+corrs <- ddply(all.data, .(model,bayesian), "corr")
+
 

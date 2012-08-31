@@ -29,7 +29,6 @@ for (e in expts) {
 
 # aggregate and clean up for comparison
 data[,c("expt","condition","measure")] <- colsplit(data$expt,"-",c("expt","condition","measure"))
-agg.data <- aggregate(cbind(target,dist,other) ~ level + expt + condition,data,mean)
 
 theta <- function(x,xdata) {mean(xdata[x])}
 ci.low <- function(x) {
@@ -37,11 +36,13 @@ ci.low <- function(x) {
 ci.high <- function(x) {
   quantile(bootstrap(1:length(x),1000,theta,x)$thetastar,.975) - mean(x)}
 
-agg.data$target.cil <- aggregate(target ~ level + expt + condition,data,ci.low)$target
-agg.data$target.cih <- aggregate(target ~ level + expt + condition,data,ci.high)$target
+agg.data <- aggregate(cbind(target,dist,other) ~ trial + level + expt + condition,data,mean)
+agg.data$target.cil <- aggregate(target ~ trial + level + expt + condition,data,ci.low)$target
+agg.data$target.cih <- aggregate(target ~ trial + level + expt + condition,data,ci.high)$target
 
 listener <- subset(agg.data,condition=="listener")
 salience <- subset(agg.data,condition=="salience")
+
 
 ########################################################
 #### GATHER TOGETHER PREDICTIONS FOR ALL EXPERIMENTS ###
@@ -49,7 +50,7 @@ salience <- subset(agg.data,condition=="salience")
 es <- read.csv("data/experiment_conditions.csv")
 
 # note I added these to agents.R
-models <- c("L_S0","L_S_L_S0","L_S_L_S_L_S0","L_S_L_S_L_S_L_S0")
+models <- c("L_S0","FG","L_S_L_S_L_S0","L_S_L_S_L_S_L_S0")
 row.names <- c('r1','r2','r3','r4')
 # big loop to run models on various datapoints of various experiments
 preds <- data.frame()
@@ -104,6 +105,13 @@ for (b in 0:1) {
 # merge dataset
 all.data <- merge(preds,listener,by.x=c("expt","level"),by.y=c("expt","level"))
 
+# merge in salience errors
+salience$sal.cil <- salience$target.cil
+salience$sal.cih <- salience$target.cih
+salience.err <- salience[,c("level","expt","sal.cil","sal.cih")]
+all.data <- merge(all.data,salience.err,by.x=c("expt","level"),by.y=c("expt","level"))
+all.data[all.data$bayesian=="No salience","sal.cil"] <- 0  # zero these out for no salience conditions
+all.data[all.data$bayesian=="No salience","sal.cih"] <- 0
 
 # lots of ggplot madness
 plot.style <- opts(panel.grid.major = theme_blank(), panel.grid.minor = theme_blank(),
@@ -112,7 +120,6 @@ plot.style <- opts(panel.grid.major = theme_blank(), panel.grid.minor = theme_bl
                    axis.title.x = theme_text(vjust=-.5),
                    axis.title.y = theme_text(angle=90,vjust=0.25),
                    panel.margin = unit(1.5,"lines"))
-
 
 all.data$model <- factor(all.data$model,levels=models)
 all.data$level <- factor(all.data$level)
@@ -125,7 +132,8 @@ q <- qplot(target.pred,target,ymin=target-target.cil,ymax=target+target.cih,
              geom_abline(intercept=0,slope=1,lty=2) + 
              facet_grid(bayesian~model) +
              scale_colour_manual(name="Experiment",values=c("red","blue","green","orange")) + 
-             scale_shape_manual(name="Inference level",values=c(15,16,17,18)) +              
+             scale_shape_manual(name="Inference level",values=c(15,16,17,18)) +     
+             geom_segment(aes(x=target.pred-sal.cil,y=target,xend=target.pred+sal.cih,yend=target)) +
         theme_bw() + 
         plot.style + 
         expand_limits(x = 0, y = 0) + 

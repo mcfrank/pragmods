@@ -96,7 +96,6 @@ CreateExperimentalData(expt = matrix(
                        distractor.referents=c(2,4,1),
                        other.referents=c(3,2,2),
                        target.features=c(4,1,3),
-                       num.with.features=colSums(expt),
                        stims=c("face","snowman","sundae"),
                        stim.plurals=c("faces","snowmen","sundaes"),
                        stims.features=list(

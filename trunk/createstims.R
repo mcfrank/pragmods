@@ -1,4 +1,4 @@
-##library(jpeg)
+library(jpeg)
 
 rm(list=ls())
 

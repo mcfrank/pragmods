@@ -78,7 +78,7 @@ CreateExperimentalData = function(
       
       ## Create the image filename and the image itself:
       filename = StimFilename(s.index=s, level.index=l, outputDirname=outputDirname)
-      ##CreateStimImage(expt.perm, stim=stim, filename)
+      CreateStimImage(expt.perm, stim=stim, filename)
 
       ## Cell values particular to this trial:
       target.referent = match(target.referents[level.index], row.perm)

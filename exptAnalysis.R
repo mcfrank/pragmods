@@ -48,7 +48,7 @@ salience <- subset(agg.data,condition=="salience")
 es <- read.csv("data/experiment_conditions.csv")
 
 # note I added these to agents.R
-models <- c("L_S0","FG","L_S_L_S_L_S0","L_S_L_S_L_S_L_S0")
+models <- c("L_S0","L_S_L_S0","L_S_L_S_L_S0","L_S_L_S_L_S_L_S0")
 
 # big loop to run models on various datapoints of various experiments
 preds <- data.frame()
@@ -133,6 +133,6 @@ grid.draw(gt)
 
 # some stats for comparison
 corr = function(x){round(cor.test(x$target.pred,x$target)$estimate,3)}
-corrs <- ddply(all.data, .(model,bayesian), "corr")
+corrs <- ddply(all.data, .(bayesian,model), "corr")
 
 

@@ -5,6 +5,7 @@ addTrialNums <- function (x) {
   x$trial <- 1
   x$trial[grep("Trial2",x$variable)] <- 2
   x$trial[grep("Trial3",x$variable)] <- 3
+  x$trial[grep("Trial4",x$variable)] <- 4
   x$variable <- sub("Trial[1-9]?","",x$variable)   
   return(x)
 }
@@ -24,13 +25,14 @@ addCheckNum <- function(x) {
   x$checkNum <- 1
   x$checkNum[grep("check2",x$variable)] <- 2
   x$checkNum[grep("check3",x$variable)] <- 3
+  x$checkNum[grep("check4",x$variable)] <- 4
   x$variable <- sub("check[1-9]?","",x$variable)   
   return(x)
 }
 
 ## clean numeric input that is currently factor or whatever
 clean <- function(x) {
-  x <- as.numeric(gsub("[^[:alnum:]_]","",as.character(x)))
+  x <- as.numeric(gsub("[^0-9\\.]","",as.character(x)))
   x[is.na(x)] <- 0
   return(x)
 }
@@ -58,7 +60,7 @@ target <- function(x) {x[paste("bet",x$targetReferent,sep="")]/100}
 dist <- function(x) {x[paste("bet",x$distractorReferent,sep="")]/100}
 other <- function(x) {x[paste("bet",x$otherReferent,sep="")]/100}
 
-exptAnalysis <- function (filename="E1-listener.csv", type="bet") {
+exptAnalysis <- function (filename="E1-listener-bet.csv", type="bet") {
   
   library(reshape)
   library(plyr)
@@ -86,9 +88,14 @@ exptAnalysis <- function (filename="E1-listener.csv", type="bet") {
     data$bet1 <- clean(data$bet1)
     data$bet2 <- clean(data$bet2)
     data$bet3 <- clean(data$bet3)
-  
+    
     # exclude data that do not sum to 100
-    data <- data[data$bet1 + data$bet2 + data$bet3 == 100,]
+    if ('bet4' %in% colnames(data)) {
+      data$bet4 <- clean(data$bet4)
+      data <- data[data$bet1 + data$bet2 + data$bet3 + data$bet4 == 100,]
+    } else {      
+      data <- data[data$bet1 + data$bet2 + data$bet3 == 100,]  
+    }
     
     # reorder bets
     data <- merge(data,ddply(data, .(WorkerId,trial), "target"))

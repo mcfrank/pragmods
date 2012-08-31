@@ -14,7 +14,8 @@ source("IBR.R")
 ########################################################
 #### GATHER UP ALL EXPERIMENTAL DATA ####
 
-expts <- c("E0-listener-bet","E0-salience-bet","E1-listener-bet","E1-salience-bet","E2-listener-bet","E2-salience-bet")
+expts <- c("E0-listener-bet","E0-salience-bet","E1-listener-bet","E1-salience-bet",
+           "E2-listener-bet","E2-salience-bet","E3-listener-bet","E3-salience-bet")
 
 data <- data.frame()
 for (e in expts) {
@@ -49,7 +50,7 @@ es <- read.csv("data/experiment_conditions.csv")
 
 # note I added these to agents.R
 models <- c("L_S0","L_S_L_S0","L_S_L_S_L_S0","L_S_L_S_L_S_L_S0")
-
+row.names <- c('r1','r2','r3','r4')
 # big loop to run models on various datapoints of various experiments
 preds <- data.frame()
 for (b in 0:1) {
@@ -60,14 +61,18 @@ for (b in 0:1) {
       e <- es[i,]
       
       # recover the experiment matrix from a string (messy)
-      matrix <- matrix(as.numeric(gsub("[^[:alnum:]_]","",
-                                       strsplit(as.character(e$matrix),"/")[[1]])),
-                       nrow=3,byrow=T,dimname=list(c('r1','r2','r3')))
+      mat.str <- as.numeric(gsub("[^[:alnum:]_]","",
+                             strsplit(as.character(e$matrix),"/")[[1]]))
+      matrix <- matrix(mat.str,
+                       nrow=e$nrows,byrow=T,dimname=list(row.names[1:e$nrows]))
       
       sal <- as.numeric(salience[salience$level==e$level & salience$expt==e$expt,c("target","dist","other")])
-      
+  
       # reorder these from tdo to matrix ordering
-      sal[c(e$target.referent,e$distractor.referent,e$other.referent)] <- sal
+      if (e$nrows==4) {sal[4] <- 1 - sum(sal)}  # recover last if there are 4
+      ord <- c(e$target.referent,e$distractor.referent,e$other.referent)
+      if (e$nrows==4) {ord[4] <- setdiff(1:4,ord)}
+      sal[ord] <- sal
       
       # unordered predictions
       if (b==0) {
@@ -119,8 +124,8 @@ q <- qplot(target.pred,target,ymin=target-target.cil,ymax=target+target.cih,
            xlim=c(0,1),ylim=c(0,1),xlab="Model prediction",ylab="Experimental data") + 
              geom_abline(intercept=0,slope=1,lty=2) + 
              facet_grid(bayesian~model) +
-             scale_colour_manual(name="Experiment",values=c("red","blue","green")) + 
-             scale_shape_manual(name="Inference level",values=c(15,16,17)) +              
+             scale_colour_manual(name="Experiment",values=c("red","blue","green","orange")) + 
+             scale_shape_manual(name="Inference level",values=c(15,16,17,18)) +              
         theme_bw() + 
         plot.style + 
         expand_limits(x = 0, y = 0) + 

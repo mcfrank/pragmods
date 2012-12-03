@@ -36,13 +36,14 @@ ci.low <- function(x) {
 ci.high <- function(x) {
   quantile(bootstrap(1:length(x),1000,theta,x)$thetastar,.975) - mean(x)}
 
-agg.data <- aggregate(cbind(target,dist,other) ~ trial + level + expt + condition,data,mean)
-agg.data$target.cil <- aggregate(target ~ trial + level + expt + condition,data,ci.low)$target
-agg.data$target.cih <- aggregate(target ~ trial + level + expt + condition,data,ci.high)$target
+agg.data <- aggregate(cbind(target,dist,other) ~ level + expt + condition,data,mean)
+agg.data$target.cil <- aggregate(target ~ level + expt + condition,data,ci.low)$target
+agg.data$target.cih <- aggregate(target ~ level + expt + condition,data,ci.high)$target
 
 listener <- subset(agg.data,condition=="listener")
 salience <- subset(agg.data,condition=="salience")
 
+agg.data.trial <- aggregate(cbind(target,dist,other) ~ trial + level + expt + condition,data,mean)
 
 ########################################################
 #### GATHER TOGETHER PREDICTIONS FOR ALL EXPERIMENTS ###
@@ -145,7 +146,31 @@ gt$layout$clip[gt$layout$name=="panel"] <- "off"
 grid.draw(gt)
 
 # some stats for comparison
-corr = function(x){round(cor.test(x$target.pred,x$target)$estimate,3)}
+
+corr = function(x){
+	c(round(cor.test(x$target.pred,x$target)$estimate,3),
+	  )}
 corrs <- ddply(all.data, .(bayesian,model), "corr")
 
+## just plot FG
+qplot(target.pred,target,ymin=target-target.cil,ymax=target+target.cih,
+           data=all.data[all.data$bayesian=="With salience" & all.data$model=="FG",],
+           colour=expt,geom="pointrange",shape=level,
+           xlim=c(0,1),ylim=c(0,1),xlab="Model prediction",ylab="Experimental data") + 
+             geom_abline(intercept=0,slope=1,lty=2) + 
+             scale_colour_manual(name="Experiment",values=c("red","blue","green","orange")) + 
+             scale_shape_manual(name="Inference level",values=c(15,16,17,18)) +     
+             geom_segment(aes(x=target.pred-sal.cil,y=target,xend=target.pred+sal.cih,yend=target)) +
+        theme_bw() + 
+        plot.style + 
+        expand_limits(x = 0, y = 0) + 
+        scale_x_continuous(expand = c(0, 0)) + 
+        scale_y_continuous(expand = c(0, 0))  
+gt <- ggplot_gtable(ggplot_build(q))
+gt$layout$clip[gt$layout$name=="panel"] <- "off"
+grid.draw(gt)
 
+
+### plot correlations
+plot(1:4,corrs$corr[5:8],xlab="Level of recursion",ylab="Correlation coefficient",
+	ylim=c(.7,1),yaxp=c(.70,1,3),xaxp=c(1,4,3),type="b",bty="n")

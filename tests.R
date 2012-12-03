@@ -52,7 +52,21 @@ fg = matrix(
     c('blue','green','square','circle')) # Colum names; messages.
   )
 
-## The Horn division of labor game (makes crucial ise of the costs)
+## Mason Chua's iteration depth
+mason = matrix(
+  c(1,   1,   1,
+    1,   1,   0,
+    1,   0,   1), byrow=T, nrow=3,
+  dimname=list(
+    c('r1', 'r2', 'r3'), # Row names; referents.
+    c('hat', 'glasses', 'mustache'))) # Column names; messages.
+
+# note: try this - IBR(mason,prior=c(.5,.3,.1))
+# could be interesting and useful for testing argmax claims because this
+# setting totally destroys us
+
+
+## The Horn division of labor game (makes crucial use of the costs)
 hornnames = list(
   c('w_footbreak', 'w_ditch'),
   c('STOP', 'MAKE-STOP'))

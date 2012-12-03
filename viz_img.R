@@ -7,7 +7,7 @@ library(png)
 ## Visualize a matrix (any number of rows; at most three columns)
 ## in terms of smiley faces based on pictures.
 
-ImageViz = function(m, print.matrix=FALSE, stim="face") {
+ImageViz = function(m, print.matrix=FALSE, stim="face", bws=rep(F,nrow(m))) {
   ## Error checking:
   if (ncol(m) > 4) {
     stop(paste("Apologies: I can't handle more than 4 columns/properties"))
@@ -24,7 +24,7 @@ ImageViz = function(m, print.matrix=FALSE, stim="face") {
 #   dev.new(width=plot.width, height=plot.height)
   par(mfrow=c(1,panels), oma=c(0,0,0,0), mar=c(0,0,0,0))
   for (i in 1:nrow(m)) {
-    StimImg(m[i, ],stim)
+    StimImg(m[i, ],stim,bw=bws[i])
   }
   ## Add a final column for the matrix if requested:
   if (print.matrix) {
@@ -42,7 +42,7 @@ ImageViz = function(m, print.matrix=FALSE, stim="face") {
 ## vals: a binary vector of length 0-4. For each coordinate, 0 means
 ## absence of the property, and 1 means presence.
 
-StimImg = function(vals=c(0,0,0,0), stim="face") {			
+StimImg = function(vals=c(0,0,0,0), stim="face", bw=F) {			
   ## Basic locating parameters:
   xval = 0
   yval = 0
@@ -77,6 +77,15 @@ StimImg = function(vals=c(0,0,0,0), stim="face") {
   
   ## Start an empty plot window with the right dimensions:
   plot(xlim, ylim, type='n', xlab='', ylab='', axes=F)  
+  
+  if (bw==T) { # if we are plotting this guy in BW
+    base.bw <- base
+    base.m <- apply( base, c(1,2), mean )
+    for (i in 1:3) {
+      base.bw[,,i] <- base.m
+    }
+    base <- base.bw
+  }
   rasterImage(base,1,1,2,2)
   
   for (i in 1:length(vals)) {

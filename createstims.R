@@ -78,7 +78,7 @@ CreateExperimentalData = function(
       
       ## Create the image filename and the image itself:
       filename = StimFilename(s.index=s, level.index=l, outputDirname=outputDirname)
-      CreateStimImage(expt.perm, stim=stim, filename)
+      CreateStimImage(expt.perm, stim=stim, filename, width=2*nrow(expt))
 
       ## Cell values particular to this trial:
       target.referent = match(target.referents[level.index], row.perm)
@@ -146,7 +146,7 @@ StimFilename = function(s.index=NULL, level.index=NULL, outputDirname=NULL, exte
 ######################################################################
 ## Create an image file:
 
-CreateStimImage = function(expt.perm=NULL, stim=NULL, filename=NULL, height=2, width=8, units="in", res=144) {
+CreateStimImage = function(expt.perm=NULL, stim=NULL, filename=NULL, height=2, width=6, units="in", res=144) {
   jpeg(filename, height=height, width=width, units=units,res=res)
   ImageViz(expt.perm, stim=stim)
   dev.off()

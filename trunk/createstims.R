@@ -24,7 +24,8 @@ CreateExperimentalData = function(
   stims=c(),
   stim.plurals=c(),
   stims.features=list(),
-  stims.features.word=list()  
+  stims.features.word=list(),
+  salience="none"
   ) {
 
   ## A bit of error-checking; more could be done to ensure sensible
@@ -76,15 +77,27 @@ CreateExperimentalData = function(
       stim.features = stims.features[[stim.index]]
       stim.features.word = stims.features.word[[stim.index]]
       
-      ## Create the image filename and the image itself:
-      filename = StimFilename(s.index=s, level.index=l, outputDirname=outputDirname)
-      CreateStimImage(expt.perm, stim=stim, filename, width=2*nrow(expt))
-
       ## Cell values particular to this trial:
       target.referent = match(target.referents[level.index], row.perm)
       distractor.referent = match(distractor.referents[level.index], row.perm)      
       other.referent = match(other.referents[level.index], row.perm)
       target.feature = match(target.features[level.index], col.perm)
+      
+      ## if we are manipulating salience
+
+      if (salience == "none") {   
+        salience.vals = rep(F,nrow(expt)) # by default all false
+      } else if (salience == "target") {
+        salience.vals = rep(T,nrow(expt))
+        salience.vals[target.referent] <- F
+      } else if (salience == "distractor") {
+        salience.vals = rep(T,nrow(expt))
+        salience.vals[distractor.referent] <- F
+      }
+      
+      ## Create the image filename and the image itself:
+      filename = StimFilename(s.index=s, level.index=l, outputDirname=outputDirname)
+      CreateStimImage(expt.perm, stim=stim, filename, width=2*nrow(expt), bws=salience.vals)
 
       ## Add values for this row and level:
       expt.data[s, IndexedColumnName("filenameTrial", l)] = filename
@@ -146,9 +159,10 @@ StimFilename = function(s.index=NULL, level.index=NULL, outputDirname=NULL, exte
 ######################################################################
 ## Create an image file:
 
-CreateStimImage = function(expt.perm=NULL, stim=NULL, filename=NULL, height=2, width=6, units="in", res=144) {
+CreateStimImage = function(expt.perm=NULL, stim=NULL, filename=NULL, height=2, 
+                           width=6, units="in", res=144, bws=rep(F,nrow(m))) {
   jpeg(filename, height=height, width=width, units=units,res=res)
-  ImageViz(expt.perm, stim=stim)
+  ImageViz(expt.perm, stim=stim, bws=bws)
   dev.off()
 }
 

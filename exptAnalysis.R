@@ -10,12 +10,16 @@ source("util.R")
 source("exptHelper.R")
 source("agents.R")
 source("IBR.R")
+source("getExptPreds.R")
+source("plottingHelper.R")
 
 ########################################################
 #### GATHER UP ALL EXPERIMENTAL DATA ####
 
 expts <- c("E0-listener-bet","E0-salience-bet","E1-listener-bet","E1-salience-bet",
-           "E2-listener-bet","E2-salience-bet","E3-listener-bet","E3-salience-bet")
+           "E2-listener-bet","E2-salience-bet")
+
+# excluded: "E3-listener-bet","E3-salience-bet"
 
 data <- data.frame()
 for (e in expts) {
@@ -45,66 +49,20 @@ salience <- subset(agg.data,condition=="salience")
 
 agg.data.trial <- aggregate(cbind(target,dist,other) ~ trial + level + expt + condition,data,mean)
 
-########################################################
-#### GATHER TOGETHER PREDICTIONS FOR ALL EXPERIMENTS ###
+## GET EXPERIMENT PREDICTIONS 
+## (FACTORED FOR CLARITY)
 
-es <- read.csv("data/experiment_conditions.csv")
-
-# note I added these to agents.R
 models <- c("L_S0","FG","L_S_L_S_L_S0","L_S_L_S_L_S_L_S0")
-row.names <- c('r1','r2','r3','r4')
-# big loop to run models on various datapoints of various experiments
-preds <- data.frame()
-for (b in 0:1) {
-  for (m in 1:length(models)) {
-    this.pred <- data.frame()
-    
-    for (i in 1:length(es$expt)) {
-      e <- es[i,]
-      
-      # recover the experiment matrix from a string (messy)
-      mat.str <- as.numeric(gsub("[^[:alnum:]_]","",
-                             strsplit(as.character(e$matrix),"/")[[1]]))
-      matrix <- matrix(mat.str,
-                       nrow=e$nrows,byrow=T,dimname=list(row.names[1:e$nrows]))
-      
-      sal <- as.numeric(salience[salience$level==e$level & salience$expt==e$expt,c("target","dist","other")])
-  
-      # reorder these from tdo to matrix ordering
-      if (e$nrows==4) {sal[4] <- 1 - sum(sal)}  # recover last if there are 4
-      ord <- c(e$target.referent,e$distractor.referent,e$other.referent)
-      if (e$nrows==4) {ord[4] <- setdiff(1:4,ord)}
-      sal[ord] <- sal
-      
-      # unordered predictions
-      if (b==0) {
-        uop <- eval(parse(text=paste(models[m],"(matrix)",sep="")))
-        this.pred[i,"bayesian"] <- "No salience"
-      } else {
-        uop <- eval(parse(text=paste(models[m],"(matrix,prior=sal)",sep="")))
-        this.pred[i,"bayesian"] <- "With salience"
-      }
-      
-      # reorder these to tdo ordering
-      pred <- c(uop[e$target.feature,e$target.referent],
-                uop[e$target.feature,e$distractor.referent],
-                uop[e$target.feature,e$other.referent])
-      
-      this.pred[i,"model"] <- models[m]
-      this.pred[i,"expt"] <- e$expt
-      this.pred[i,"level"] <- e$level
-      this.pred[i,"target.pred"] <- pred[1]
-      this.pred[i,"dist.pred"] <- pred[2]
-      this.pred[i,"other.pred"] <- pred[3]
-    }  
-    preds <- rbind.fill(preds,this.pred)
-  }
-}
+preds <- getExptPreds("data/experiment_conditions_updated.csv",
+                      models=models)
+
 ########################################################
 #### VISUALIZE RESULTS VS. PREDICTIONS ###
 
 # merge dataset
 all.data <- merge(preds,listener,by.x=c("expt","level"),by.y=c("expt","level"))
+all.data$model <- factor(all.data$model,levels=models)
+all.data$level <- factor(all.data$level)
 
 # merge in salience errors
 salience$sal.cil <- salience$target.cil
@@ -114,19 +72,8 @@ all.data <- merge(all.data,salience.err,by.x=c("expt","level"),by.y=c("expt","le
 all.data[all.data$bayesian=="No salience","sal.cil"] <- 0  # zero these out for no salience conditions
 all.data[all.data$bayesian=="No salience","sal.cih"] <- 0
 
-# lots of ggplot madness
-plot.style <- opts(panel.grid.major = theme_blank(), panel.grid.minor = theme_blank(),
-                   axis.line = theme_segment(colour="black",size=.5),
-                   axis.ticks = theme_segment(size=.5),
-                   axis.title.x = theme_text(vjust=-.5),
-                   axis.title.y = theme_text(angle=90,vjust=0.25),
-                   panel.margin = unit(1.5,"lines"))
-
-all.data$model <- factor(all.data$model,levels=models)
-all.data$level <- factor(all.data$level)
 
 # actually plot, plus more ggplot madness
-quartz()
 q <- qplot(target.pred,target,ymin=target-target.cil,ymax=target+target.cih,
            data=all.data,colour=expt,geom="pointrange",shape=level,
            xlim=c(0,1),ylim=c(0,1),xlab="Model prediction",ylab="Experimental data") + 
@@ -136,14 +83,14 @@ q <- qplot(target.pred,target,ymin=target-target.cil,ymax=target+target.cih,
              scale_shape_manual(name="Inference level",values=c(15,16,17,18)) +     
              geom_segment(aes(x=target.pred-sal.cil,y=target,xend=target.pred+sal.cih,yend=target)) +
         theme_bw() + 
-        plot.style + 
-        expand_limits(x = 0, y = 0) + 
-        scale_x_continuous(expand = c(0, 0)) + 
-        scale_y_continuous(expand = c(0, 0))       
+        plot.style
 
 gt <- ggplot_gtable(ggplot_build(q))
 gt$layout$clip[gt$layout$name=="panel"] <- "off"
 grid.draw(gt)
+
+########################################################
+#### STATISTICS AND SUMMARIES
 
 # some stats for comparison
 

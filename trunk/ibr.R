@@ -17,8 +17,8 @@ source('agents.R')
 ## A list seq with numeric keys, where the values are strategies.
 ## length(seq) gives the depth of iteration
 
-IBR = function(m, costs=NULL, prior=UniformDistribution(nrow(m)), maxiter=100) {
-  seq = Iterator(m, costs=costs, prior=prior, argmax=TRUE, maxiter=maxiter, digits=100)
+IBR = function(m, costs=NULL, prior=UniformDistribution(nrow(m)), maxiter=100, argmax_on=TRUE) {
+  seq = Iterator(m, costs=costs, prior=prior, argmax=argmax_on, maxiter=maxiter, digits=100)
   return(seq)
 }
 

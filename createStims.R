@@ -21,10 +21,14 @@ CreateExperimentalData = function(
   distractor.referents=c(),
   other.referents=c(),
   target.features=c(), 
-  stims=c(),
-  stim.plurals=c(),
-  stims.features=list(),
-  stims.features.word=list(),
+  stims=c("face","snowman","sundae"),
+  stim.plurals=c("faces","snowmen","sundaes"),
+  stims.features=list(c("hat","glasses","mustache"),
+                      c("beanie","scarf","gloves"),
+                      c("cherry","whipped cream","chocolate")),
+  stims.features.word=list(c("a hat","glasses","a mustache"),
+                           c("a beanie","a scarf","gloves"),
+                           c("a cherry","whipped cream","chocolate sauce")),
   salience="none"
   ) {
 

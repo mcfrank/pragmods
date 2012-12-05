@@ -13,13 +13,18 @@ source("IBR.R")
 source("getExptPreds.R")
 source("plottingHelper.R")
 
+## consider using only first trial
+trial1only <- F
+
 ########################################################
 #### GATHER UP ALL EXPERIMENTAL DATA ####
 
 expts <- c("E0-listener-bet","E0-salience-bet","E1-listener-bet","E1-salience-bet",
            "E2-listener-bet","E2-salience-bet",
            "E0S_targ-listener-bet","E0S_targ-salience-bet",
-           "E0S_dist-listener-bet","E0S_dist-salience-bet")
+           "E0S_dist-listener-bet","E0S_dist-salience-bet",
+           "E1S_targ-listener-bet","E1S_targ-salience-bet",
+           "E1S_dist-listener-bet","E1S_dist-salience-bet")
 
 # excluded: "E3-listener-bet","E3-salience-bet"
 
@@ -42,12 +47,21 @@ ci.low <- function(x) {
 ci.high <- function(x) {
   quantile(bootstrap(1:length(x),1000,theta,x)$thetastar,.975) - mean(x)}
 
-agg.data <- aggregate(cbind(target,dist,other) ~ trial + level + expt + condition,data,mean)
-agg.data$target.cil <- aggregate(target ~ trial + level + expt + condition,data,ci.low)$target
-agg.data$target.cih <- aggregate(target ~ trial + level + expt + condition,data,ci.high)$target
+if (trial1only) {
+  agg.data <- aggregate(cbind(target,dist,other) ~ trial + level + expt + condition,data,mean)
+  agg.data$target.cil <- aggregate(target ~ trial + level + expt + condition,data,ci.low)$target
+  agg.data$target.cih <- aggregate(target ~ trial + level + expt + condition,data,ci.high)$target
 
-listener <- subset(agg.data,condition=="listener" & trial == 1)
-salience <- subset(agg.data,condition=="salience")
+  listener <- subset(agg.data,condition=="listener" & trial == 1)
+  salience <- subset(agg.data,condition=="salience" & trial == 1)
+} else {
+  agg.data <- aggregate(cbind(target,dist,other) ~ level + expt + condition,data,mean)
+  agg.data$target.cil <- aggregate(target ~ level + expt + condition,data,ci.low)$target
+  agg.data$target.cih <- aggregate(target ~ level + expt + condition,data,ci.high)$target
+  
+  listener <- subset(agg.data,condition=="listener")
+  salience <- subset(agg.data,condition=="salience")
+}
 
 agg.data.trial <- aggregate(cbind(target,dist,other) ~ trial + level + expt + condition,data,mean)
 
@@ -55,7 +69,7 @@ agg.data.trial <- aggregate(cbind(target,dist,other) ~ trial + level + expt + co
 ## (FACTORED FOR CLARITY)
 
 models <- c("L_S0","FG","L_S_L_S_L_S0","L_S_L_S_L_S_L_S0")
-preds <- getExptPreds("data/experiment_conditions_updated.csv",
+preds <- getExptPreds("data/experiment_conditions_updated.csv",salience,
                       models=models)
 
 ########################################################
@@ -81,7 +95,7 @@ q <- qplot(target.pred,target,ymin=target-target.cil,ymax=target+target.cih,
            xlim=c(0,1),ylim=c(0,1),xlab="Model prediction",ylab="Experimental data") + 
              geom_abline(intercept=0,slope=1,lty=2) + 
              facet_grid(bayesian~model) +
-             scale_colour_manual(name="Experiment",values=c("red","blue","green","orange","cyan")) + 
+             scale_colour_manual(name="Experiment",values=c("red","blue","green","orange","cyan","pink","yellow")) + 
              scale_shape_manual(name="Inference level",values=c(15,16,17,18)) +     
              geom_segment(aes(x=target.pred-sal.cil,y=target,xend=target.pred+sal.cih,yend=target)) +
         theme_bw() + 

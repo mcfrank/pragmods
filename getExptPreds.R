@@ -1,10 +1,11 @@
 ########################################################
 #### GATHER TOGETHER PREDICTIONS FOR ALL EXPERIMENTS ###
 
-getExptPreds <- function(filename="data/experiment_conditions.csv",
+getExptPreds <- function(filename="data/experiment_conditions.csv",salience,
                          models=c("L_S0","FG","L_S_L_S_L_S0","L_S_L_S_L_S_L_S0")) {
   
   es <- read.csv(filename)
+  es$level <- factor(es$level)
   
   # note I added these to agents.R  
   row.names <- c('r1','r2','r3','r4')

@@ -1,7 +1,5 @@
 library(jpeg)
 
-rm(list=ls())
-
 source('viz_img.R')
 ##source('ibr.R')
 ##source('agents.R')
@@ -29,8 +27,7 @@ CreateExperimentalData = function(
   stims.features.word=list(c("a hat","glasses","a mustache"),
                            c("a beanie","a scarf","gloves"),
                            c("a cherry","whipped cream","chocolate sauce")),
-  salience="none"
-  ) {
+  salience="none",salience.output="color") {
 
   ## A bit of error-checking; more could be done to ensure sensible
   ## designs that will throw errors later.
@@ -46,7 +43,7 @@ CreateExperimentalData = function(
 
   ## Just add intuitive row and column names for now:
   expt = PrepExperimentalMatrix(expt)
-
+  
   ## The output data frame that we will store in CSV:
   expt.data = data.frame(hitNum=1:n.subs)
 
@@ -88,10 +85,9 @@ CreateExperimentalData = function(
       target.feature = match(target.features[level.index], col.perm)
       
       ## if we are manipulating salience
-
-      if (salience == "none") {   
-        salience.vals = rep(F,nrow(expt)) # by default all false
-      } else if (salience == "target") {
+      salience.vals = rep(F,nrow(expt)) # by default all false
+      
+      if (salience == "target") {
         salience.vals = rep(T,nrow(expt))
         salience.vals[target.referent] <- F
       } else if (salience == "distractor") {
@@ -101,8 +97,12 @@ CreateExperimentalData = function(
       
       ## Create the image filename and the image itself:
       filename = StimFilename(s.index=s, level.index=l, outputDirname=outputDirname)
-      CreateStimImage(expt.perm, stim=stim, filename, width=2*nrow(expt), bws=salience.vals)
-
+      if (salience.output == "color") {  # if we are using color to do salience
+        CreateStimImage(expt.perm, stim=stim, filename, width=2*nrow(expt), bws=salience.vals)
+      } else {
+        CreateStimImage(expt.perm, stim=stim, filename, width=2*nrow(expt))
+      }
+      
       ## Add values for this row and level:
       expt.data[s, IndexedColumnName("filenameTrial", l)] = filename
       expt.data[s, IndexedColumnName("levelTrial", l)] = level
@@ -125,6 +125,14 @@ CreateExperimentalData = function(
       }
       expt.data[s, IndexedColumnName("targetReferentTrial", l)] = target.referent
       expt.data[s, IndexedColumnName("permutedMatrix", l)] = paste(expt.perm,collapse="")
+      
+      ## If we are doing salience using target phrases
+      positions = c("one on the left","one in the middle","one on the right")
+      if (salience.output == "phrase" & salience == "target") {
+        expt.data[s, IndexedColumnName("targetReferencePhraseTrial", l)] = positions[target.referent]
+      } else if (salience.output == "phrase" & salience == "distractor") {
+        expt.data[s, IndexedColumnName("targetReferencePhraseTrial", l)] = positions[distractor.referent]
+      }
     }
   }
 
@@ -164,7 +172,7 @@ StimFilename = function(s.index=NULL, level.index=NULL, outputDirname=NULL, exte
 ## Create an image file:
 
 CreateStimImage = function(expt.perm=NULL, stim=NULL, filename=NULL, height=2, 
-                           width=6, units="in", res=144, bws=rep(F,nrow(m))) {
+                           width=6, units="in", res=144, bws=rep(F,nrow(expt.perm))) {
   jpeg(filename, height=height, width=width, units=units,res=res)
   ImageViz(expt.perm, stim=stim, bws=bws)
   dev.off()

@@ -69,7 +69,7 @@ agg.data.trial <- aggregate(cbind(target,dist,other) ~ trial + level + expt + co
 ## (FACTORED FOR CLARITY)
 
 models <- c("L_S0","FG","L_S_L_S_L_S0","L_S_L_S_L_S_L_S0")
-preds <- getExptPreds("data/experiment_conditions_updated.csv",salience,
+  preds <- getExptPreds("data/experiment_conditions_updated.csv",salience,
                       models=models)
 
 ########################################################

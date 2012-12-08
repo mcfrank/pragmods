@@ -19,12 +19,19 @@ trial1only <- F
 ########################################################
 #### GATHER UP ALL EXPERIMENTAL DATA ####
 
-expts <- c("E0-listener-bet","E0-salience-bet","E1-listener-bet","E1-salience-bet",
+expts <- c("E0-listener-bet","E0-salience-bet",
+           "E1-listener-bet","E1-salience-bet",
            "E2-listener-bet","E2-salience-bet",
+           "E3-listener-bet","E3-salience-bet",
            "E0S_targ-listener-bet","E0S_targ-salience-bet",
            "E0S_dist-listener-bet","E0S_dist-salience-bet",
            "E1S_targ-listener-bet","E1S_targ-salience-bet",
-           "E1S_dist-listener-bet","E1S_dist-salience-bet")
+           "E1S_dist-listener-bet","E1S_dist-salience-bet",
+           "E0S_targ_phrase-listener-bet","E0S_targ_phrase-salience-bet",
+           "E0S_dist_phrase-listener-bet","E0S_dist_phrase-salience-bet",
+           "E0S_dist_phrase_as-listener-bet",
+           "E0S_targ_phrase_as-listener-bet")
+          # targ phrase as salience bet is fake
 
 # excluded: "E3-listener-bet","E3-salience-bet"
 
@@ -63,13 +70,12 @@ if (trial1only) {
   salience <- subset(agg.data,condition=="salience")
 }
 
-agg.data.trial <- aggregate(cbind(target,dist,other) ~ trial + level + expt + condition,data,mean)
 
 ## GET EXPERIMENT PREDICTIONS 
 ## (FACTORED FOR CLARITY)
 
-models <- c("L_S0","FG","L_S_L_S_L_S0","L_S_L_S_L_S_L_S0")
-  preds <- getExptPreds("data/experiment_conditions_updated.csv",salience,
+models <- c("L0","LS","LSL","LSLS","LSLSL","LSLSLS")
+preds <- getExptPreds("data/experiment_conditions_all.csv",salience,
                       models=models)
 
 ########################################################
@@ -95,7 +101,7 @@ q <- qplot(target.pred,target,ymin=target-target.cil,ymax=target+target.cih,
            xlim=c(0,1),ylim=c(0,1),xlab="Model prediction",ylab="Experimental data") + 
              geom_abline(intercept=0,slope=1,lty=2) + 
              facet_grid(bayesian~model) +
-             scale_colour_manual(name="Experiment",values=c("red","blue","green","orange","cyan","pink","yellow")) + 
+             scale_colour_manual(name="Experiment",values=c("red","blue","green","orange","cyan","pink","yellow","gray","purple")) + 
              scale_shape_manual(name="Inference level",values=c(15,16,17,18)) +     
              geom_segment(aes(x=target.pred-sal.cil,y=target,xend=target.pred+sal.cih,yend=target)) +
         theme_bw() + 
@@ -113,8 +119,34 @@ grid.draw(gt)
 
 corr = function(x) {
 	round(cor.test(x$target.pred,x$target)$estimate,3)}
+rmse = function(x) {
+  round(sqrt(mean((x$target.pred-x$target)^2)),2)}
+
+
 corrs <- ddply(all.data, .(bayesian,model), "corr")
+corrs.nozero <- ddply(all.data[all.data$level != 0,], .(bayesian,model), "corr")
+
+rmses <- ddply(all.data, .(bayesian,model), "rmse")
+rmses.nozero <- ddply(all.data[all.data$level != 0,], .(bayesian,model), "rmse")
 
 quartz()
 qplot(model,corr,colour=bayesian,data=corrs,geom=c("line"), group=bayesian) +
+  theme_bw() + plot.style
+
+
+########################################################
+#### TRIAL EFFECT
+
+agg.data.trial <- aggregate(cbind(target,dist,other) ~ trial + level + expt + condition,data,mean)
+agg.data.trial$target.cil <- aggregate(target ~ trial + level + expt + condition,data,ci.low)$target
+agg.data.trial$target.cih <- aggregate(target ~ trial + level + expt + condition,data,ci.high)$target
+
+listener.trial <- subset(agg.data.trial,condition=="listener" & level==1)
+listener.trial$trial <- factor(listener.trial$trial)
+
+quartz()
+qplot(trial,target,facets=.~expt,data=listener.trial,
+      ymin=target-target.cil,ymax=target+target.cih,
+      ylim=c(0,1),
+      geom="pointrange") + 
   theme_bw() + plot.style

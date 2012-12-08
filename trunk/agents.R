@@ -281,19 +281,38 @@ FG = function(m, prior=UniformDistribution(nrow(m))) {
 ##
 ## Note that resort.to.uniform = FALSE allows for null rows in Experiment 0
 
-L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
+#c("L0","LS","LSL","LSLS","LSLSL","LSLSLS")
+
+L0 <- function(m,prior=UniformDistribution(nrow(m))) {
+  Lbayes(m,prior=prior)
+}
+
+LS <- function(m,prior=UniformDistribution(nrow(m))) {
   Lbayes(S0(m),
          m,prior=prior)
 }
 
-L_S_L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
+LSL <- function(m,prior=UniformDistribution(nrow(m))) {
+  Lbayes(S(Lbayes(m,prior=prior),
+           m,resort.to.uniform=FALSE),
+         m,prior=prior)
+}
+
+LSLS <- function(m,prior=UniformDistribution(nrow(m))) {
   Lbayes(S(Lbayes(S0(m),
                   m,prior=prior),
            m,resort.to.uniform=FALSE),
          m,prior=prior)
 }
 
-L_S_L_S_L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
+LSLSL <- function(m,prior=UniformDistribution(nrow(m))) {
+  Lbayes(S(Lbayes(S(Lbayes(m,prior=prior)),
+                  m,prior=prior),
+           m,resort.to.uniform=FALSE),
+         m,prior=prior)
+}
+
+LSLSLS <- function(m,prior=UniformDistribution(nrow(m))) {
   Lbayes(S(Lbayes(S(Lbayes(S0(m),
                            m,prior=prior),
                     m,resort.to.uniform=FALSE),
@@ -302,7 +321,7 @@ L_S_L_S_L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
          m,prior=prior)
 }
 
-L_S_L_S_L_S_L_S0 <- function(m,prior=UniformDistribution(nrow(m))) {
+LSLSLSLS <- function(m,prior=UniformDistribution(nrow(m))) {
   Lbayes(S(Lbayes(S(Lbayes(S(Lbayes(S0(m),
                                     m,prior=prior),
                              m,resort.to.uniform=FALSE),

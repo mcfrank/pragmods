@@ -144,6 +144,14 @@ class Model(object):
         self.utts = utts
         self.utt_lengths = np.sum(utts, axis=1)
 
+        # Compute multiplicities of each utterance. This is only for the use
+        # of .real_S0(); it's not needed at all for the regular model.
+        vec_fact = np.vectorize(factorial)
+        permutations = vec_fact(self.utt_lengths)
+        equiv_permutations = np.prod(vec_fact(self.utts), axis=1)
+        assert np.all(permutations % equiv_permutations) == 0
+        self.multiplicities = permutations // equiv_permutations
+
     def flat_lexicon_prior(self, alpha):
         return alpha * np.ones((self.adjectives, self.objects))
 
@@ -199,6 +207,27 @@ class Model(object):
             logP_utt[:] += np.sum(gammaln(self.utts + alpha), axis=1)
 
         return logP_utt_given_objects
+
+    def normalize_S0(self, S0, length_prior):
+        """Compute the actual S0 distribution over utterances; useful for
+        simulating experiments with pragmatics "turned off". See the comment
+        at the top for why this is different -- here we compute:
+          P(utt bag | object)
+        while S0() computes
+          P(utt vector | object, length)
+
+        'length_prior' should be a vector with max_utterance_length entries,
+        which just gives the prior probability of an utterance with each given
+        length.
+        """
+        length_prior = np.asarray(length_prior)
+        assert np.allclose(np.sum(length_prior), 1)
+        assert length_prior.shape == (self.max_utterance_length,)
+        logP = np.copy(S0)
+        logP += np.log(self.multiplicities)[:, np.newaxis]
+        logP += np.log(length_prior)[self.utt_lengths - 1][:, np.newaxis]
+        assert np.allclose(np.logaddexp.reduce(logP, axis=0), 0)
+        return logP
 
     def L(self, logP_S):
         # logP_S is P(utt|obj, ...) as a (word vector, object) matrix
@@ -284,6 +313,7 @@ def test_Model_basics():
                            [1, 2],
                            [0, 3]])
     assert np.array_equal(m.utt_lengths, [1, 1, 2, 2, 2, 3, 3, 3, 3])
+    assert np.array_equal(m.multiplicities, [1, 1, 1, 2, 1, 1, 3, 3, 1])
 
     prior = m.flat_lexicon_prior(7)
     assert np.array_equal(prior,
@@ -365,10 +395,17 @@ def test_Model_S0():
     # Distributions should be normalized (given length and object and the fact
     # that our <0 1> bag needs to be double-counted, because it also
     # represents the utterance <1 0>)
+    assert np.all(m.multiplicities[:2] == 1)
     assert np.allclose(S0_raw[0, 0] + S0_raw[1, 0], 1)
     assert np.allclose(S0_raw[0, 1] + S0_raw[1, 1], 1)
+    assert np.array_equal(m.multiplicities[2:], [1, 2, 1])
     assert np.allclose(S0_raw[2, 0] + 2 * S0_raw[3, 0] + S0_raw[4, 0], 1)
     assert np.allclose(S0_raw[2, 1] + 2 * S0_raw[3, 1] + S0_raw[4, 1], 1)
+
+    real_S0_raw = np.exp(m.normalize_S0(S0, [0.7, 0.3]))
+    assert np.allclose(np.sum(real_S0_raw, axis=0), 1)
+    assert np.allclose(real_S0_raw[:, 0] / real_S0_raw[:, 1],
+                       S0_raw[:, 0] / S0_raw[:, 1])
 
 def test_Model_L():
     m = Model(adjectives=2, objects=2, max_utterance_length=2)
@@ -441,7 +478,7 @@ def test_sample_objects():
     assert set(objs) == set([0, 1, 2, 3])
 
 def sample_naming_task(seed, model, lexicon_prior, objects, s_depth,
-                       trace_funcs=[]):
+                       S0_length_prior=None, trace_funcs=[]):
     """Sample one path through a simple naming task, in which S has to name
     each object in 'objects' in sequence."""
     assert s_depth % 2 == 0
@@ -451,9 +488,17 @@ def sample_naming_task(seed, model, lexicon_prior, objects, s_depth,
     for obj in objects:
         if len(history) % 10 == 0:
             sys.stdout.write(".")
-        dists = model.dists_at_depths(range(s_depth + 1),
+        # Arbitrary, somewhat quirky convention: when sampling utterances from
+        # S(n), we provide trace functions with all distributions out to
+        # L(n+1).
+        dists = model.dists_at_depths(range(s_depth + 2),
                                       lexicon_prior, history)
-        utt_dist_raw = np.exp(dists[-1][:, obj])
+        if S0_length_prior is not None:
+            dists[0] = model.normalize_S0(dists[0], S0_length_prior)
+        # Must extract *after* the call to normalize_S0, because if s_depth=0
+        # then we need S0 normalized in order to sample from it.
+        speaker_dist = dists[-2]
+        utt_dist_raw = np.exp(speaker_dist[:, obj])
         utt = r.multinomial(1, utt_dist_raw).nonzero()[0].item()
         for trace_func, trace_value in zip(trace_funcs, trace_values):
             trace_value.append(trace_func(model, lexicon_prior, history,
@@ -462,18 +507,17 @@ def sample_naming_task(seed, model, lexicon_prior, objects, s_depth,
     return (history,) + tuple(trace_values)
 
 def trace_P_correct(model, lexicon_prior, history, utt, obj, dists):
-    # For a naming task performed by Sn, what is the probability that L<n-1>
-    # will understand?
+    # For a naming task performed by Sn, what is the probability that
+    # L<n+1> (i.e., the optimal listener for Sn) will understand?
     # P(L_obj = obj)
     #   = sum_S_utt P(L_obj = obj | S_utt) P(S_utt | obj = obj)
     # (This assumes a uniform distribution over objects)
-    L_dist = dists[-2]
-    S_dist = dists[-1]
+    S_dist, L_dist = dists[-2:]
     P_L_correct = np.mean(np.sum(np.exp(L_dist + S_dist), axis=0))
     return P_L_correct
 
 def trace_utt_len_dist(model, lexicon_prior, history, utt, obj, dists):
-    S_dist = dists[-1]
+    S_dist = dists[-2]
     # This is like an R tapply(); we compute the total probability mass
     # assigned to utterances of each length, by the speaker
     #   P(utt) = P(utt | obj) * P(obj)

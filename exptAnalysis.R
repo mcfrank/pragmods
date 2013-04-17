@@ -14,23 +14,23 @@ source("getExptPreds.R")
 source("plottingHelper.R")
 
 ## consider using only first trial
-trial1only <- F
+trial1only <- T
 
 ########################################################
 #### GATHER UP ALL EXPERIMENTAL DATA ####
 
 expts <- c("E0-listener-bet","E0-salience-bet",
            "E1-listener-bet","E1-salience-bet",
-           "E2-listener-bet","E2-salience-bet",
-           "E3-listener-bet","E3-salience-bet",
+           "E2-listener-bet","E2-salience-bet",           
            "E0S_targ-listener-bet","E0S_targ-salience-bet",
            "E0S_dist-listener-bet","E0S_dist-salience-bet",
            "E1S_targ-listener-bet","E1S_targ-salience-bet",
            "E1S_dist-listener-bet","E1S_dist-salience-bet",
            "E0S_targ_phrase-listener-bet","E0S_targ_phrase-salience-bet",
-           "E0S_dist_phrase-listener-bet","E0S_dist_phrase-salience-bet",
-           "E0S_dist_phrase_as-listener-bet",
-           "E0S_targ_phrase_as-listener-bet")
+           "E0S_dist_phrase-listener-bet","E0S_dist_phrase-salience-bet")
+# "E3-listener-bet","E3-salience-bet",
+#            "E0S_dist_phrase_as-listener-bet",
+#            "E0S_targ_phrase_as-listener-bet")
           # targ phrase as salience bet is fake
 
 # excluded: "E3-listener-bet","E3-salience-bet"
@@ -74,7 +74,7 @@ if (trial1only) {
 ## GET EXPERIMENT PREDICTIONS 
 ## (FACTORED FOR CLARITY)
 
-models <- c("L0","LS","LSL","LSLS","LSLSL","LSLSLS")
+models <- c("L0","LS","LSL","LSLS","LSLSLS")
 preds <- getExptPreds("data/experiment_conditions_all.csv",salience,
                       models=models)
 
@@ -101,7 +101,7 @@ q <- qplot(target.pred,target,ymin=target-target.cil,ymax=target+target.cih,
            xlim=c(0,1),ylim=c(0,1),xlab="Model prediction",ylab="Experimental data") + 
              geom_abline(intercept=0,slope=1,lty=2) + 
              facet_grid(bayesian~model) +
-             scale_colour_manual(name="Experiment",values=c("red","blue","green","orange","cyan","pink","yellow","gray","purple")) + 
+             scale_colour_manual(name="Experiment",values=c("red","blue","green","orange","cyan","pink","yellow","gray","purple","black")) + 
              scale_shape_manual(name="Inference level",values=c(15,16,17,18)) +     
              geom_segment(aes(x=target.pred-sal.cil,y=target,xend=target.pred+sal.cih,yend=target)) +
         theme_bw() + 

@@ -82,7 +82,7 @@ function stimHTML(base,n,prop_mat,props,id) {
 
 // ---------------- 2. STIMULUS SETUP ------------------
 // Condition - call the maker getter to get the cond variable 
-var filename = "MCF_pragmods_v4"
+var filename = "MCF_pragmods_v5"
 var condCounts = "1,75;2,75;3,75;4,75;5,75;6,75;7,75;8,75"
 var xmlHttp = null;
 xmlHttp = new XMLHttpRequest();
@@ -122,14 +122,14 @@ var fam_finished;
 var positions = ["left","middle","right"];
 
 // ADAPTED FROM PRAGMODS R CODE
-var expt = [[0, 0, 0], [0, 0, 1], [0, 1, 1]];
+var expt = [[1, 0, 0], [1, 1, 0], [0, 1, 1]];
 var choice_names_unpermuted = ["foil","target","logical"];
-var level = 1;
+var level = 2;
 var target_unpermuted = 1;
 var distractor_unpermuted = 2;
 var other_unpermuted = 0;
-var target_prop_unpermuted = 2;
-var distractor_prop_unpermuted = 1;
+var target_prop_unpermuted = 1;
+var distractor_prop_unpermuted = 0;
 
 var stims = ["bike","friend","pizza","snowman","sundae","Christmas tree"];
 var stims_plural = ["bikes","friends","pizzas","snowmen","sundaes","Christmas trees"];
@@ -157,7 +157,7 @@ var stims_times = [["weekend","Week"],
 		   ["winter","Year"],
 		   ["Friday","Week"],
 		   ["Christmas","Year"]];
-var img_size = 200;
+var img_size = 200; // needs to be implemented, currently just a placeholder
 
     
 var stim_index = random(0,stims.length-1);
@@ -386,7 +386,7 @@ var experiment = {
 
     // CHECK THAT TEST IS DONE
     check_test: function() {
-	if (experiment.choice != -1 &&
+	if (experiment.choice != "null" &&
 	    document.getElementById("manipCheckTarget").value != "" &&
 	    document.getElementById("manipCheckDist").value != "") 
 	{

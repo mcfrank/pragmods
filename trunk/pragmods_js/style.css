@@ -120,6 +120,7 @@ This stuff will vary by experiment.
 
 .objTable {
     position: relative;
+    display: inline-block;
 }
 
 #objImage{

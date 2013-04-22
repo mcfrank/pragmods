@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os, sys
 
 settings = open(sys.argv[1], 'r')

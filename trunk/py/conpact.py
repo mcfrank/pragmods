@@ -1,5 +1,9 @@
 # First attempt to model conceptual pacts via bayesian pragmatics
 
+# This uses the original model where uncertainty lives at the literal listener
+# level, and is trained (illegitimately) directly on the the pragmatic speaker
+# output.
+
 # We imagine a scenario in which a speaker describes an object using a
 # sequence of adjectives. The literal speaker uses a variant of dm-wurwur,
 # i.e.:

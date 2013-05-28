@@ -201,15 +201,15 @@ class Domain(object):
         self.utt_costs = np.sum(utts * self.word_cost[np.newaxis, :],
                                 axis=1)
 
-    def sample_lexicons(self, r, count, alpha=None):
-        if alpha is None:
-            alpha = np.ones((self.adjectives, self.objects))
-        alpha = np.asarray(alpha)
+    def sample_lexicons(self, r, count, lexicon_prior=None):
+        if lexicon_prior is None:
+            lexicon_prior = np.ones((self.adjectives, self.objects))
+        lexicon_prior = np.asarray(lexicon_prior)
         lexicons = []
         for i in xrange(count):
             lexicon = np.empty((self.adjectives, self.objects))
             for j in xrange(self.adjectives):
-                lexicon[j, :] = r.dirichlet(alpha[j, :])
+                lexicon[j, :] = r.dirichlet(lexicon_prior[j, :])
             lexicons.append(lexicon)
         return lexicons
 
@@ -485,17 +485,17 @@ class SDataBackchannel(object):
             return np.log(1 - P_ok)
 
 # XX not used
-def prior_lexicon_loglik_unnorm(lexicon, alpha):
-    # alpha is a matrix of dirichlet parameters
-    # each column of 'alpha' corresponds to each column of 'lexicon'.
+def prior_lexicon_loglik_unnorm(lexicon, lexicon_prior):
+    # lexicon_prior is a matrix of dirichlet parameters
+    # each column of 'lexicon_prior' corresponds to each column of 'lexicon'.
     # We ignore the normalization on the dirichlet distribution, because it
-    # depends only on 'alpha', not 'lexicon'.
-    return np.sum((alpha - 1) * np.log(lexicon))
+    # depends only on 'lexicon_prior', not 'lexicon'.
+    return np.sum((lexicon_prior - 1) * np.log(lexicon))
 
 # XX not used
-def logP_lexicon_given_data_unnorm(lexicon, alpha, data):
+def logP_lexicon_given_data_unnorm(lexicon, lexicon_prior, data):
     # P(lexicon | data) = P(data | lexicon) P(lexicon) / Z
-    total = prior_lexicon_loglik_unnorm(alpha, lexicon)
+    total = prior_lexicon_loglik_unnorm(lexicon_prior, lexicon)
     for datum in data:
         total += datum.log_likelihood(lexicon)
     return total
@@ -540,22 +540,22 @@ class FixedSupportImportanceSampler(object):
     # to long utterances and long dialogues, but doesn't scale to large
     # lexicons.
     def __init__(self, domain, particle_seed, particle_count,
-                 alpha=None, data=[]):
+                 lexicon_prior=None, data=[]):
         self._domain = domain
-        if alpha is None:
-            alpha = np.ones((self._domain.adjectives, self._domain.objects))
-        self._alpha = np.asarray(alpha)
-        # We use the prior on lexicons (as determined by 'alpha') to sample
-        # the particle values for our importance sampler. There's a subtlety
-        # here; the proper way to do this is to set each particle's weight to
-        #   P_prior(lexicon) / P_proposal(lexicon)
-        # and then update it further from there as next data comes in. But,
-        # because we use the prior to choose our initial distribution, the two
-        # terms in this ratio cancel out, so we just initialize our
-        # weights to be all-zero.
+        if lexicon_prior is None:
+            lexicon_prior = np.ones((self._domain.adjectives,
+                                     self._domain.objects))
+        self._lexicon_prior = np.asarray(lexicon_prior)
+        # We use the prior on lexicons to sample the particle values for our
+        # importance sampler. There's a subtlety here; the proper way to do
+        # this is to set each particle's weight to P_prior(lexicon) /
+        # P_proposal(lexicon) and then update it further from there as next
+        # data comes in. But, because we use the prior to choose our initial
+        # distribution, the two terms in this ratio cancel out, so we just
+        # initialize our weights to be all-zero.
         r = np.random.RandomState(particle_seed)
         self._lexicons = self._domain.sample_lexicons(r, particle_count,
-                                                      alpha)
+                                                      lexicon_prior)
         self._weights = np.zeros(len(self._lexicons))
         self._data = []
         if data:
@@ -599,18 +599,25 @@ class FixedSupportImportanceSampler(object):
 
 class Dialogue(object):
     def __init__(self, domain, listener, particle_seed, particle_count,
-                 tracers=None, alpha=None):
+                 tracers=None,
+                 lexicon_prior=None,
+                 speaker_lexicon_prior=None,
+                 listener_lexicon_prior=None):
         assert listener % 2 == 0
         self.domain = domain
         self.listener = listener
+        if speaker_lexicon_prior is None:
+            speaker_lexicon_prior = lexicon_prior
         self.speaker_sampler = FixedSupportImportanceSampler(self.domain,
                                                              particle_seed,
                                                              particle_count,
-                                                             alpha=alpha)
+                                                             lexicon_prior=speaker_lexicon_prior)
+        if listener_lexicon_prior is None:
+            listener_lexicon_prior = lexicon_prior
         self.listener_sampler = FixedSupportImportanceSampler(self.domain,
                                                               particle_seed,
                                                               particle_count,
-                                                              alpha=alpha)
+                                                              lexicon_prior=listener_lexicon_prior)
         if tracers is None:
             tracers = default_tracers()
         self.tracers = tracers
@@ -648,15 +655,20 @@ class Dialogue(object):
         s_dist = self.uncertain_s_dist(log_object_prior)
         return weighted_choice(r, np.exp(s_dist[:, obj]))
 
-    def sample_interp(self, r, utt, log_object_prior=None):
+    def sample_interp_backchannel(self, r, utt, log_object_prior=None):
         l_dist = self.uncertain_l_dist(log_object_prior)
-        return weighted_choice(r, np.exp(l_dist[utt, :]))
+        interp = weighted_choice(r, np.exp(l_dist[utt, :]))
+        if r.rand() < np.exp(l_dist[utt, interp]):
+            return interp, "ok"
+        else:
+            return interp, "huh?"
 
-    def sample_obj_utt_interp(self, r, log_object_prior=None):
+    def sample_obj_utt_interp_backchannel(self, r, log_object_prior=None):
         obj = self.sample_obj(r, log_object_prior)
         utt = self.sample_utt(r, obj, log_object_prior)
-        interp = self.sample_interp(r, utt, log_object_prior)
-        return (obj, utt, interp)
+        interp, backchannel = self.sample_interp_backchannel(r, utt,
+                                                             log_object_prior)
+        return (obj, utt, interp, backchannel)
 
 # Tracer objects
 

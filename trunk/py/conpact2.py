@@ -626,8 +626,9 @@ class Dialogue(object):
                                                              lexicon_prior=speaker_lexicon_prior)
         if listener_lexicon_prior is None:
             listener_lexicon_prior = lexicon_prior
+        listener_p_seed = 12345 + particle_seed
         self.listener_sampler = FixedSupportImportanceSampler(self.domain,
-                                                              particle_seed,
+                                                              listener_p_seed,
                                                               particle_count,
                                                               lexicon_prior=listener_lexicon_prior)
         if tracers is None:

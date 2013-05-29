@@ -527,6 +527,18 @@ class MemoizedDomain(Domain):
 # Simple inference
 ################################################################
 
+class EmceeSampler(object):
+    # To parametrize the simplices that our lexica live on, we introduce
+    # hypothetical auxiliary variables T_i. (T is for Total). The scheme is,
+    # we interpret a vector of unconstrained parameters theta_j as
+    #   T = sum_j theta_j
+    #   p_j = theta_j / T
+    # and then the p_j parameters are the points on the lexicon simplex (for
+    # one row of the lexicon), and T is allowd to vary arbitrarily but with a
+    # simple diffuse prior to make sure the sampling is all hunky-dory.
+    def __init__(self, domain, lexicon_prior=None, data=[]):
+        pass
+
 class FixedSupportImportanceSampler(object):
     # Estimates the posterior on lexicons by keeping a static list of
     # lexicons, and calculating the weight assigned to each.

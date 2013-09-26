@@ -37,3 +37,10 @@ This is pretty minor but helps to confirm that there's some variability in the o
 I ran 7 frequency conditions in the previous iteration--this time I'm doing 4: p(target) = [.125,.375,.625,.875]. Last time I had 50 in each condition (for a total of 700 participants = 50 x 7 x listener/salience). This time I will up it to 75 x 4 x 2 = 600. Relatively minor.
 
 ------- v5: stiller no scales mod -------
+
+------- v6-7: getting base rate data with no schelling game  -------
+
+just ask "which one is his friend" with no reference game or mumbles.
+
+** note: there was a typo in experiments 4 and 5 such that the salience condition says "friend", e.g. for christmas tree, it would say "the friend I most like to trim has (mumble mumble)." this is not good. 
+

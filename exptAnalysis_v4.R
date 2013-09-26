@@ -7,10 +7,8 @@ rm(list=ls())
 
 ############## PREAMBLE ############
 source("tests.R")
+source("~/Projects/R/mcf.useful.R")
 source("agents.R")
-
-ci.l <- function(x) {binom.confint(sum(x),length(x),method="bayes",tol=.001)$lower}
-ci.h <- function(x) {binom.confint(sum(x),length(x),method="bayes",tol=.001)$upper}
 
 get.preds <- function(m,d,eps=.001) {
   prior <- array()
@@ -21,6 +19,7 @@ get.preds <- function(m,d,eps=.001) {
   # smooth prior with eps
   prior <- (prior + eps) / (sum(prior) + (length(prior) * eps))
 #   print(prior)
+  #prior <- c(.333,.333,.333)
   
   preds <- array()
   preds[1] <- L0(m,prior)["glasses","r2"]
@@ -37,11 +36,16 @@ d1$level <- "L1"
 d2 <- read.table("~/Projects/Pragmatics/pragmods/pragmods_js/pragmods_v5.results.tsv",
                  sep="\t",header=TRUE)
 d2$level <- "L2"
-d <- rbind(d1,d2)
+d3 <- read.table("~/Projects/Pragmatics/pragmods/pragmods_js/pragmods_v6.results.tsv",
+                 sep="\t",header=TRUE)
+d3$level <- "L1"
+d4 <- read.table("~/Projects/Pragmatics/pragmods/pragmods_js/pragmods_v7.results.tsv",
+                 sep="\t",header=TRUE)
+d4$level <- "L2"
+d <- rbind(d1,d2,d3,d4)
 d$level <- factor(d$level)
 
 ## exclude check false
-d <- subset(d, Answer.name_check_correct == "\"TRUE\"")
 d$item <- factor(str_replace_all(as.character(d$Answer.item),"\"",""))
 d$choice <- factor(str_replace_all(as.character(d$Answer.choice),"\"",""))
 d$cond <- factor(str_replace_all(as.character(d$Answer.word_condition),"\"",""))
@@ -53,12 +57,17 @@ d$mc.dist <- as.numeric(str_replace_all(as.character(d$Answer.manip_check_dist),
 
 
 ############ EXCLUSIONS ############
-d <- subset(d,d$mc.targ == 2 & 
+d <- subset(d,Answer.name_check_correct == "\"TRUE\"" & 
+              d$mc.targ == 2 & 
               ((d$mc.dist == 1 & d$level == "L1") |
-               (d$mc.dist == 2 & d$level == "L2")) & 
-              d$choice != "null")
+               (d$mc.dist == 2 & d$level == "L2"))) # & 
+              #d$choice != "null")# & 
+              #!duplicated(d$workerid))
 
 ############ ADD MODEL AND PLOT ############
+ci.l <- function(x) {binom.confint(sum(x),length(x),method="bayes",tol=1e-5)$lower}
+ci.h <- function(x) {binom.confint(sum(x),length(x),method="bayes",tol=1e-5)$upper}
+
 f <- correct ~ cond + freq + level #+ item
 
 ms <- aggregate(f, d, mean)
@@ -72,21 +81,22 @@ mats <- list()
 mats[[1]] <- stiller.scales
 mats[[2]] <- stiller.noscales.mod
 levels <- c("L1","L2")
-es <- seq(0,1,.01)
+es <- seq(.01,1,.01)
 all.mods <- list()
 
 for (e in 1:length(es)) {
   all.mods[[e]] <- data.frame()
   for (m in 1:length(mats)) {
     for (f in unique(ms$freq)) {
+      corr.preds <- get.preds(mats[[m]],
+                              subset(d,freq==f & 
+                                       level==levels[m] & 
+                                       cond=="baserate"),
+                              eps=es[e])
       preds <- data.frame(cond=models,
                                freq=f,
                                level=levels[m],
-                               correct=get.preds(mats[[m]],
-                                                 subset(d,freq==f & 
-                                                          level==levels[m] & 
-                                                          cond=="salience"),
-                                                 eps=es[e]),
+                               correct=corr.preds,
                                cil=NA,cih=NA,n=NA)
       
       all.mods[[e]] <- rbind(all.mods[[e]],preds)
@@ -110,21 +120,39 @@ for (i in 1:4) {
 }
 
 ### PLOT IT
-# quartz()
-comb <- rbind(ms,all.mods[[47]])
+quartz()
+comb <- rbind(ms,all.mods[[best.es[4]]]) # 
 comb[comb$level=="L2" & comb$cond=="L0","correct"] = 
   comb[comb$level=="L2" & comb$cond=="L0","correct"] - .01 # offset the L0 so you can see it
-ggplot(comb, 
-       aes(x=freq,y=correct,colour=cond,ymin=cil,ymax=cih)) + 
+# comb <- subset(comb,cond!="salience")
+comb$cond <- factor(comb$cond, levels=c("baserate","listener","salience",
+                                        "L0","LS","LSL","LSLS"))
+ggplot(comb, aes(x=freq,y=correct,colour=cond,ymin=cil,ymax=cih)) + 
   facet_grid(level~.) + 
   xlab("Target Baserate") + 
   ylab("Proportion Target Judgments") + 
   ylim(c(0,1)) +
-  geom_pointrange(data=subset(comb,cond=="listener" | cond=="salience"),
-                  position=position_dodge(.02)) +
-  geom_line(data=subset(comb,cond!="listener" & cond!="salience"),lty=2,
-              se=FALSE,span=1.5)
+  geom_pointrange(data=subset(comb,cond=="listener" | cond=="salience"), #| cond=="baserate"
+                  position=position_dodge(.02)) +  
+  #geom_line(data=subset(comb,cond=="listener"  | cond=="salience"), #| cond=="baserate"
+#position=position_dodge(.02)) + 
+  geom_smooth(data=subset(comb,cond=="listener" | cond=="salience"),
+              method="loess", span=2, se=FALSE) + 
+#   geom_line(data=subset(comb, cond != "listener" & cond != "baserate" & cond != "salience"),
+#            lty=2, se=FALSE,span=1.5) +
+  theme_bw()
 
+# 
+# +
+#   scale_colour_manual("Condition",
+#                       breaks = c("baserate","listener"),
+#                       values = c("baserate" = "blue",
+#                                            "listener" = "red")) + 
+#   scale_linetype_manual("Model",values = c() +
+#   theme_bw()
+#                   
+#   
+# 
 
 # ## item analysis
 # f <- correct ~ cond + freq + level + item

@@ -97,8 +97,8 @@ Speaker = function(m, sem=m, costs=NULL, prior=NULL, argmax=TRUE, resort.to.unif
     m = t(apply(m, 1, ZerosVector2ZerosVector))
   }    
     
-  ## Subtract costs:
-  m = m - costs
+  ## Subtract costs, in log-space to ensure proper normalization:
+  m = exp(log(m) - costs)
   ## Maximize if requested:
   if (argmax) {
     m = t(apply(m, 1, VecMax))

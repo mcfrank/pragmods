@@ -21,7 +21,7 @@ MatrixViz = function(m, print.matrix=FALSE, stim="face", bws=rep(F,nrow(m))) {
     panels = panels + 1
   }
   ## Plot the smileys:
-#   dev.new(width=plot.width, height=plot.height)
+  dev.new(width=plot.width, height=plot.height)
   par(mfrow=c(1,panels), oma=c(0,0,0,0), mar=c(0,0,0,0))
   for (i in 1:nrow(m)) {
     StimImg(m[i, ],stim,bw=bws[i])

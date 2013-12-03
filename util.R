@@ -105,7 +105,7 @@ UnitVector = function(x) {
 }
 
 ######################################################################
-## Determine whether a matric contains a Universal (Unit) vector:
+## Determine whether a matrix contains a Universal (Unit) vector:
 
 ContainsUniversalRow = function(m) {
   ContainsUniversalVector(m, 1)  

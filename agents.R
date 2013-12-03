@@ -115,7 +115,7 @@ Speaker = function(m, sem=m, costs=NULL, prior=NULL, argmax=TRUE, resort.to.unif
 ## LISTENERS
 
 ##################################################
-## A speaker who
+## A listener who
 ## 
 ## * incorporates no prior. (prior is a keyword
 ## argument to ensure compatibility with the other
@@ -132,7 +132,7 @@ L = function(m, sem, costs=NULL, prior=NULL) {
 }
 
 ##################################################
-## A speaker who
+## A listener who
 ## 
 ## * incorporates a prior (default is uniform)
 ## * does not argmax
@@ -145,12 +145,13 @@ Lbayes = function(m, sem, costs=NULL, prior=UniformDistribution(nrow(m))) {
 } 
 
 ##################################################
-## A speaker who
+## A listener who
 ## 
 ## * incorporates no prior. (prior is a keyword
 ## argument to ensure compatibility with the other
 ## functions; if a value is supplied, it is NOT
 ## passed to Listener)
+##
 ## * does argmax
 ##
 ## For additional details on the arguments, see Listener
@@ -161,7 +162,7 @@ Lstar = function(m, sem, costs=NULL, prior=NULL) {
 } 
 
 ##################################################
-## A speaker who
+## A listener who
 ## 
 ## * incorporates a prior (default is uniform)
 ## * does argmax

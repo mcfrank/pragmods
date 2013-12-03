@@ -7,7 +7,7 @@ library(png)
 ## Visualize a matrix (any number of rows; at most three columns)
 ## in terms of smiley faces based on pictures.
 
-ImageViz = function(m, print.matrix=FALSE, stim="face", bws=rep(F,nrow(m))) {
+MatrixViz = function(m, print.matrix=FALSE, stim="face", bws=rep(F,nrow(m))) {
   ## Error checking:
   if (ncol(m) > 4) {
     stop(paste("Apologies: I can't handle more than 4 columns/properties"))
@@ -95,19 +95,5 @@ StimImg = function(vals=c(0,0,0,0), stim="face", bw=F) {
   }  
 }
 
-######################################################################
-## Make a matrix of 2xN images
 
-MatrixViz = function(m, print.matrix=FALSE, stim="face", panels=c(2,5)) {
-  
-  ## Parameters for the plotting:
-  plot.width = nrow(m)*2
-  plot.height = 2
-
-  ## Plot the smileys:
-  par(mfcol=panels, oma=c(0,0,0,0), mar=c(0,0,0,0))
-  for (i in 1:nrow(m)) {
-    StimImg(m[i, ],stim)
-  }  
-}
 

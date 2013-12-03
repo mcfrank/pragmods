@@ -1,7 +1,7 @@
 #!/usr/bin/env R
 
 source('ibr.R')
-source('viz.R')
+source('viz_img.R')
 
 ######################################################################
 ## SCENARIOS:

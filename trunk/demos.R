@@ -43,7 +43,7 @@ Matrix7 = function() {
   print("======================================================================")
   print('4 x 4 matrix requiring 7 iterations in IBR')
   print(IBR(m7))
-  ImageViz(m7, print.matrix=TRUE)
+  MatrixViz(m7, print.matrix=TRUE)
 }
 
 ## All demos:

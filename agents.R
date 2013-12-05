@@ -228,7 +228,7 @@ Listener = function(
         }    
     }  
     ## Impose the prior:
-    m = function(row){ (row*prior) }
+    m = t(apply(m, 1, function(row){ (row*prior) }))
     ## Maximize:
     if (argmax) {
         m = t(apply(m, 1, VecMax))

@@ -16,6 +16,8 @@ source('viz.R')
 ## include.univ.cols: allow messages/properties true of all objects (defaut: TRUE)
 ## include.empty.rows: allow objects with no true messages/properties (default: TRUE)
 ## include.univ.rows:  allow objects with all messages/properties (default: TRUE)
+## row.names: optional row names (default is t1 ... tN) for N = nrow
+## col.names: optional column names (default is m1 ... mN) for N = ncol
 ##
 ## Value:
 ## mats: a list mapping integers to matrices.
@@ -48,71 +50,80 @@ source('viz.R')
 ## because it is a permutation of [[1]] obtained by exchanging both rows and columns.
 
 AllBinaryMatrices = function(nrow, ncol,
-  include.permutation.variants=FALSE,
-  include.row.repeats=TRUE, include.col.repeats=TRUE,
-  include.empty.cols=TRUE, include.univ.cols=TRUE,
-  include.empty.rows=TRUE, include.univ.rows=TRUE) {
-  total = nrow*ncol
-  matcount = 2^total
-  ## This is used to filter out matrices that are row-permutations and/or
-  ## column permutations of ones we've already seen.
-  matlib = c()
-  ## Output data structure
-  mats = list()
-  ## Increment the matrix counter:
-  matind = 1
-  ## Intuitive row and column names:
-  row.names = paste('t', seq(1,nrow), sep='')
-  col.names = paste('m', seq(1,ncol), sep='')
-  ## Iterate with a while loop so that R doesn't try to build the
-  ## whole 1:matcount vector:
-  j = 1
-  print(paste('Matrices to test:', matcount))
-  while (j <= matcount) {
-    ## Get the nrow x ncol matrix associated with the binary version of j:
-    vec = Integer2BinaryVector(j, total)
-    thismat = matrix(vec, byrow=TRUE, nrow=nrow)
-    ## Canonical (permutation invariant) string versions:
-    matstr = Matrix2CanonicalStr(thismat)
-    ## Iff we've never seen a row or column permutation variant of
-    ## this matrix, we process it:
-    if (include.permutation.variants == TRUE | (matstr %in% matlib)==FALSE) {
-      ## Add this matrix to the library:
-      matlib = c(matlib, matstr)
-      ## Exclude matrices that contain 0s columns, since the model
-      ## is not able to recover from such situations:
-      if (include.empty.cols | ContainsZerosCol(thismat) == FALSE) {
-        ## Option to exclude matrices in which a column has all 1s:
-        if (include.univ.cols == TRUE | ContainsUniversalCol(thismat)==FALSE) {
-          ## Option to exclude matrices that contain all 0 rows:
-          if (include.empty.rows == TRUE | ContainsZerosRow(thismat) == FALSE) {
-            ## Option to exclude matrices that contain all 1 rows:
-            if (include.univ.rows == TRUE | ContainsUniversalRow(thismat) == FALSE) {
-              ## Option to exclude matrices with repeated rows:
-              if (include.row.repeats == TRUE | ContainsRowRepeats(thismat) == FALSE) {
-                ## Option to exclude matrices with repeated rows:
-                if (include.col.repeats == TRUE | ContainsColRepeats(thismat) == FALSE) {
-                  ## Get the corresponding columns from vecs:           
-                  rownames(thismat) = row.names
-                  colnames(thismat) = col.names
-                  mats[[matind]] = thismat
-                  ## Increment the matrix counter:
-                  matind = matind + 1
+    include.permutation.variants=FALSE,
+    include.row.repeats=TRUE,
+    include.col.repeats=TRUE,
+    include.empty.cols=TRUE,
+    include.univ.cols=TRUE,
+    include.empty.rows=TRUE,
+    include.univ.rows=TRUE,
+    row.names=NULL,
+    col.names=NULL) {
+    total = nrow*ncol
+    matcount = 2^total
+    ## This is used to filter out matrices that are row-permutations and/or
+    ## column permutations of ones we've already seen.
+    matlib = c()
+    ## Output data structure
+    mats = list()
+    ## Increment the matrix counter:
+    matind = 1
+    ## Intuitive row and column names:
+    if (is.null(row.names)) {
+        row.names = paste('t', seq(1,nrow), sep='')
+    }
+    if (is.null(col.names)) {
+        col.names = paste('m', seq(1,ncol), sep='')
+    }
+    ## Iterate with a while loop so that R doesn't try to build the
+    ## whole 1:matcount vector:
+    j = 1
+    print(paste('Matrices to test:', matcount))
+    while (j <= matcount) {
+        ## Get the nrow x ncol matrix associated with the binary version of j:
+        vec = Integer2BinaryVector(j, total)
+        thismat = matrix(vec, byrow=TRUE, nrow=nrow)
+        ## Canonical (permutation invariant) string versions:
+        matstr = Matrix2CanonicalStr(thismat)
+        ## Iff we've never seen a row or column permutation variant of
+        ## this matrix, we process it:
+        if (include.permutation.variants == TRUE | (matstr %in% matlib)==FALSE) {
+            ## Add this matrix to the library:
+            matlib = c(matlib, matstr)
+            ## Exclude matrices that contain 0s columns, since the model
+            ## is not able to recover from such situations:
+            if (include.empty.cols | ContainsZerosCol(thismat) == FALSE) {
+                ## Option to exclude matrices in which a column has all 1s:
+                if (include.univ.cols == TRUE | ContainsUniversalCol(thismat)==FALSE) {
+                    ## Option to exclude matrices that contain all 0 rows:
+                    if (include.empty.rows == TRUE | ContainsZerosRow(thismat) == FALSE) {
+                        ## Option to exclude matrices that contain all 1 rows:
+                        if (include.univ.rows == TRUE | ContainsUniversalRow(thismat) == FALSE) {
+                            ## Option to exclude matrices with repeated rows:
+                            if (include.row.repeats == TRUE | ContainsRowRepeats(thismat) == FALSE) {
+                                ## Option to exclude matrices with repeated rows:
+                                if (include.col.repeats == TRUE | ContainsColRepeats(thismat) == FALSE) {
+                                    ## Get the corresponding columns from vecs:           
+                                    rownames(thismat) = row.names
+                                    colnames(thismat) = col.names
+                                    mats[[matind]] = thismat
+                                    ## Increment the matrix counter:
+                                    matind = matind + 1
+                                }
+                            }
+                        }
+                    }
                 }
-              }
             }
-          }
         }
-      }
+        ## Increment while-loop counter:
+        j = j + 1
+        ## Progress report for very large runs:
+        if (j %% 100000 == 0) {
+            print(paste('Finished matrix:', j))
+        }
     }
-    ## Increment while-loop counter:
-    j = j + 1
-    ## Progress report for very large runs:
-    if (j %% 100000 == 0) {
-      print(paste('Finished matrix:', j))
-    }
-  }
-  return(mats)
+    return(mats)
 }
 
 ######################################################################

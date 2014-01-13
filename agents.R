@@ -224,7 +224,7 @@ Listener = function(
         }
         ## Impose costs otherwise:
         else {
-            m[i, ] = m[i, ] - costs[i, ]
+            m[i, ] = exp(log(m[i, ]) - costs[i, ])
         }    
     }  
     ## Impose the prior:

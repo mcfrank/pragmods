@@ -69,7 +69,7 @@ Iterator = function(m, costs=NULL, prior=UniformDistribution(nrow(m)),
   seq = list()
   ## Get the base agent:
   seq[[1]] = if (listener.is.first) {
-               initial.listener(m, prior=prior)
+               initial.listener(m, m, prior=prior)
              }
              else {
                initial.speaker(m)
